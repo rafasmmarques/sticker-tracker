@@ -19,7 +19,7 @@ export function CollectionToolbar({
       <div className="collection-toolbar__controls">
         <input
           type="search"
-          placeholder="Buscar por número. Ex: 001"
+          placeholder="Buscar por código, seleção ou jogador. Ex: GER 5"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
         />

@@ -73,7 +73,7 @@ function App() {
 
   async function copyMissingStickers() {
     const missingList = missingStickers
-      .map((sticker) => sticker.code)
+      .map((sticker) => sticker.displayCode)
       .join(", ");
 
     const text = missingList

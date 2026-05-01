@@ -90,6 +90,7 @@
     position: relative;
     z-index: 1;
     width: fit-content;
+    max-width: calc(100% - 24px);
     margin: 12px 12px 0 auto;
     border: 1px solid rgba(23, 27, 95, 0.08);
     border-radius: 999px;
@@ -99,6 +100,7 @@
     font-size: 0.64rem;
     font-weight: 900;
     letter-spacing: 0.08em;
+    white-space: nowrap;
     box-shadow: 0 8px 14px rgba(20, 33, 61, 0.04);
     backdrop-filter: blur(8px);
 }

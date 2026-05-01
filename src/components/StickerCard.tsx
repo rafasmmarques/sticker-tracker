@@ -8,7 +8,7 @@ type StickerCardProps = {
   onDecreaseQuantity: (stickerId: number) => void;
 };
 
-const CARD_THEMES = ["usa", "mexico", "canada", "classic"] as const;
+const CARD_THEMES = ["canada", "mexico", "usa", "classic"] as const;
 
 export function StickerCard({
   sticker,
@@ -28,7 +28,7 @@ export function StickerCard({
           quantity > 0 ? "sticker-card--owned" : "",
         ].join(" ")}
       >
-        <span className="sticker-card__number">{sticker.code}</span>
+        <span className="sticker-card__number">{sticker.displayCode}</span>
 
         <div className="sticker-card__art">
           <BrandMark />
@@ -49,7 +49,7 @@ export function StickerCard({
         <button
           className="quantity-button quantity-button--remove"
           type="button"
-          aria-label={`Remover figurinha ${sticker.code}`}
+          aria-label={`Remover figurinha ${sticker.displayCode}`}
           disabled={quantity === 0}
           onClick={() => onDecreaseQuantity(sticker.id)}
         >
@@ -58,7 +58,7 @@ export function StickerCard({
 
         <div
           className="quantity-indicator"
-          aria-label={`Quantidade da figurinha ${sticker.code}`}
+          aria-label={`Quantidade da figurinha ${sticker.displayCode}`}
         >
           {quantity}
         </div>
@@ -66,7 +66,7 @@ export function StickerCard({
         <button
           className="quantity-button quantity-button--add"
           type="button"
-          aria-label={`Adicionar figurinha ${sticker.code}`}
+          aria-label={`Adicionar figurinha ${sticker.displayCode}`}
           onClick={() => onIncreaseQuantity(sticker.id)}
         >
           +
