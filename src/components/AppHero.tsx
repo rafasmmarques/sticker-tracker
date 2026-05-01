@@ -1,5 +1,3 @@
-import { BrandMark } from "./BrandMark";
-
 type AppHeroProps = {
   onSaveCollection: () => Promise<void>;
   isSavingCollection: boolean;
@@ -37,10 +35,6 @@ export function AppHero({
             {isSavingCollection ? "Salvando..." : "Salvar coleção"}
           </button>
         </div>
-      </div>
-
-      <div className="app-hero__brand">
-        <BrandMark variant="hero" />
       </div>
     </section>
   );
