@@ -1,0 +1,17 @@
+.back-to-top-button {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 80;
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border: 0;
+    border-radius: 999px;
+    color: #ffffff;
+    background: var(--color-navy);
+    box-shadow: 0 16px 34px rgba(20, 33, 61, 0.28);
+    font-size: 1.2rem;
+    font-weight: 950;
+}
