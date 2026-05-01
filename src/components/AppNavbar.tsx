@@ -5,7 +5,7 @@ import {
   signOut,
   signUpWithEmail,
 } from "../services/authService";
-import { useToast } from "./ToastProvider";
+import { useToast } from "../hooks/useToast";
 
 type AppNavbarProps = {
   user: User | null;

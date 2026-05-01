@@ -64,7 +64,6 @@ export function useStickerCollection(userId?: string) {
   useEffect(() => {
     if (!userId) {
       syncedUserIdRef.current = null;
-      setSyncError(null);
 
       return;
     }
@@ -72,6 +71,8 @@ export function useStickerCollection(userId?: string) {
     let isMounted = true;
 
     async function hydrateCollection() {
+      if (!userId) return;
+
       try {
         setIsSyncing(true);
         setSyncError(null);
@@ -119,6 +120,8 @@ export function useStickerCollection(userId?: string) {
     }
 
     const timeout = window.setTimeout(async () => {
+      if (!userId) return;
+
       try {
         setSyncError(null);
         await syncUserStickerCollection(userId, collection);

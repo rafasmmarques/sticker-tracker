@@ -5,7 +5,7 @@ import { BackToTopButton } from "./components/BackToTopButton";
 import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { StickerGrid } from "./components/StickerGrid";
-import { useToast } from "./components/ToastProvider";
+import { useToast } from "./hooks/useToast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
 import { useStickerCollection } from "./hooks/useStickerCollection";
