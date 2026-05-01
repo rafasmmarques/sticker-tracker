@@ -226,16 +226,6 @@ export function AppNavbar({ user }: AppNavbarProps) {
                           >
                             Entrar
                           </button>
-
-                          <button
-                            className="auth-dropdown__switch"
-                            type="button"
-                            disabled={isSubmitting}
-                            tabIndex={mode === "login" ? 0 : -1}
-                            onClick={() => setMode("register")}
-                          >
-                            Quero criar uma conta
-                          </button>
                         </form>
                       </div>
                     </section>
@@ -291,16 +281,6 @@ export function AppNavbar({ user }: AppNavbarProps) {
                             tabIndex={mode === "register" ? 0 : -1}
                           >
                             Criar conta
-                          </button>
-
-                          <button
-                            className="auth-dropdown__switch"
-                            type="button"
-                            disabled={isSubmitting}
-                            tabIndex={mode === "register" ? 0 : -1}
-                            onClick={() => setMode("login")}
-                          >
-                            Já tenho conta
                           </button>
                         </form>
                       </div>
