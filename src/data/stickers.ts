@@ -10,6 +10,21 @@ export const stickers: Sticker[] = Array.from(
     return {
       id: number,
       code: number.toString().padStart(3, "0"),
+      number,
+      playerName: null,
+      playerPosition: null,
+      isSpecial: false,
+      specialFinish: null,
+      section: null,
+      pageNumber: null,
+      displayOrder: number,
+      team: null,
+      type: {
+        id: 1,
+        slug: "player_base",
+        name: "Jogador",
+        isSpecial: false,
+      },
     };
   }
 );

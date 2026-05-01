@@ -1,10 +1,14 @@
 import { BrandMark } from "./BrandMark";
 
 type AppHeroProps = {
-  onClearCollection: () => void;
+  onSaveCollection: () => Promise<void>;
+  isSavingCollection: boolean;
 };
 
-export function AppHero({ onClearCollection }: AppHeroProps) {
+export function AppHero({
+  onSaveCollection,
+  isSavingCollection,
+}: AppHeroProps) {
   return (
     <section className="app-hero">
       <div className="app-hero__content">
@@ -25,9 +29,12 @@ export function AppHero({ onClearCollection }: AppHeroProps) {
           <button
             className="ghost-button"
             type="button"
-            onClick={onClearCollection}
+            disabled={isSavingCollection}
+            onClick={() => {
+              void onSaveCollection();
+            }}
           >
-            Limpar coleção
+            {isSavingCollection ? "Salvando..." : "Salvar coleção"}
           </button>
         </div>
       </div>

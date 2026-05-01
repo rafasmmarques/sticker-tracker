@@ -1,0 +1,123 @@
+@media (max-width: 900px) {
+    .app-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .app-hero__brand {
+        display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .collection-toolbar__controls {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-shell {
+        width: min(100% - 16px, 1200px);
+        padding-top: 8px;
+    }
+
+    .app-navbar {
+        margin-bottom: 10px;
+    }
+
+    .auth-dropdown {
+        position: fixed;
+        top: 66px;
+        right: 8px;
+        left: 8px;
+        width: auto;
+    }
+
+    .app-hero {
+        min-height: auto;
+        border-radius: 24px;
+    }
+
+    .app-hero__content {
+        padding: 26px;
+    }
+
+    .app-hero h1 {
+        font-size: clamp(2.6rem, 16vw, 4.25rem);
+    }
+
+    .app-hero p {
+        font-size: 0.98rem;
+    }
+
+    .app-hero__actions,
+    .collection-toolbar__controls {
+        flex-direction: column;
+    }
+
+    .primary-link,
+    .ghost-button,
+    .collection-toolbar button {
+        width: 100%;
+    }
+
+    .collection-toolbar {
+        gap: 14px;
+    }
+
+    .collection-toolbar h2 {
+        font-size: 2rem;
+    }
+
+    .stats-grid {
+        gap: 12px;
+    }
+
+    .stickers-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 12px;
+    }
+
+    .sticker-card {
+        min-height: 196px;
+        border-radius: 24px;
+    }
+
+    .brand-mark--card {
+        width: 72px;
+        height: 72px;
+    }
+
+    .sticker-card__footer {
+        min-height: 52px;
+        margin: 0 10px 10px;
+        padding: 10px;
+    }
+
+    .sticker-card__footer strong {
+        font-size: 0.9rem;
+    }
+
+    .quantity-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .toast-viewport {
+        right: 8px;
+        bottom: 8px;
+        left: 8px;
+        width: auto;
+    }
+
+    .back-to-top-button {
+        right: 12px;
+        bottom: 12px;
+    }
+}
