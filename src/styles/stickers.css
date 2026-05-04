@@ -68,7 +68,7 @@
 
 .sticker-card__flag {
     width: 100%;
-    max-width: 102px;
+    max-width: 100px;
     height: auto;
     aspect-ratio: 3 / 2;
     object-fit: contain;

@@ -169,7 +169,7 @@ function App() {
 
       <AppFooter
         developerName="Rafael Marques"
-        pixKey="rafaelmarques@email.com"
+        pixKey="61981141486"
       />
     </main>
   );

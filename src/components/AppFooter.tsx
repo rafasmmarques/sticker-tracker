@@ -24,7 +24,14 @@ export function AppFooter({ developerName, pixKey }: AppFooterProps) {
         {developerName ? (
           <>
             <p>
-              Desenvolvido por <strong>{developerName}</strong>
+              Desenvolvido por{" "}
+              <a
+                href="https://github.com/rafasmmarques/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <strong>{developerName}</strong>
+              </a>
             </p>
             {pixKey && (
               <button
