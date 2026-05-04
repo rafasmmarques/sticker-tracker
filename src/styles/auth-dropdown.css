@@ -171,3 +171,109 @@
         transition: none;
     }
 }
+
+.trade-link-section {
+    padding: 16px;
+    margin: 0 -16px 16px;
+    background: #f8fafc;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.trade-link-section__label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    font-weight: 900;
+    color: var(--color-ink);
+}
+
+.trade-link-section__input-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.trade-link-section__prefix {
+    padding: 12px 8px 12px 14px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+    border-right: none;
+    border-radius: 999px 0 0 999px;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+.trade-link-section__input {
+    flex: 1;
+    min-height: 46px;
+    padding: 0 14px 0 4px;
+    border: 1px solid var(--color-border);
+    border-left: none;
+    border-radius: 0 999px 999px 0;
+    font-size: 0.82rem;
+    color: var(--color-ink);
+    outline: none;
+}
+
+.trade-link-section__input:focus {
+    border-color: rgba(23, 86, 169, 0.42);
+}
+
+.trade-link-section__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    cursor: pointer;
+}
+
+.trade-link-section__checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-navy);
+}
+
+.trade-link-section__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.trade-link-section__save {
+    flex: 1;
+    min-height: 42px;
+    border: 0;
+    border-radius: 999px;
+    color: #ffffff;
+    background: var(--color-navy);
+    font-size: 0.82rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.trade-link-section__save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.trade-link-section__copy {
+    padding: 0 14px;
+    min-height: 42px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-navy);
+    background: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.trade-link-section__copy:hover {
+    background: var(--color-border);
+}

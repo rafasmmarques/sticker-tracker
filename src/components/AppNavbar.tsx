@@ -1,10 +1,11 @@
 import type { User } from "@supabase/supabase-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   signInWithEmail,
   signOut,
   signUpWithEmail,
 } from "../services/authService";
+import { getProfile, updateTradeLink } from "../services/profileService";
 import { useToast } from "../hooks/useToast";
 
 type AppNavbarProps = {
@@ -23,6 +24,93 @@ export function AppNavbar({ user }: AppNavbarProps) {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [tradeUsername, setTradeUsername] = useState("");
+  const [tradeLinkAtivo, setTradeLinkAtivo] = useState(false);
+  const [isLoadingTrade, setIsLoadingTrade] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    const userId: string = user.id;
+    let cancelled = false;
+
+    async function loadProfile() {
+      try {
+        const profile = await getProfile(userId);
+        if (cancelled) return;
+        if (profile) {
+          setTradeUsername(profile.username ?? "");
+          setTradeLinkAtivo(profile.linkAtivo);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (!cancelled) {
+          setProfileLoaded(true);
+        }
+      }
+    }
+
+    void loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  async function handleSaveTradeLink() {
+    if (!user) return;
+
+    const trimmedUsername = tradeUsername.trim().toLowerCase();
+
+    if (trimmedUsername && !/^[a-z0-9_]{3,20}$/.test(trimmedUsername)) {
+      showToast({
+        title: "Nome inválido.",
+        description: "Use 3-20 letras, números ou underscore.",
+        variant: "error",
+      });
+      return;
+    }
+
+    try {
+      setIsLoadingTrade(true);
+      await updateTradeLink(user.id, trimmedUsername || null, tradeLinkAtivo);
+
+      showToast({
+        title: "Link salvo.",
+        description: tradeLinkAtivo
+          ? `Seu link de trocas está ativo: /trocas/${trimmedUsername}`
+          : "Link de trocas desativado.",
+        variant: "success",
+      });
+    } catch (error) {
+      showToast({
+        title: "Erro ao salvar.",
+        description:
+          error instanceof Error ? error.message : "Tente novamente.",
+        variant: "error",
+      });
+    } finally {
+      setIsLoadingTrade(false);
+    }
+  }
+
+  async function handleCopyTradeLink() {
+    if (!tradeUsername || !tradeLinkAtivo) return;
+
+    const url = `${window.location.origin}/trocas/${tradeUsername}`;
+    await navigator.clipboard.writeText(url);
+
+    showToast({
+      title: "Link copiado.",
+      description: "Compartilhe com seus amigos.",
+      variant: "success",
+    });
+  }
 
   async function submitLogin() {
     try {
@@ -133,6 +221,60 @@ export function AppNavbar({ user }: AppNavbarProps) {
                   Sua coleção pode ser salva na nuvem e acessada em outros
                   dispositivos.
                 </p>
+
+                {profileLoaded && (
+                  <div className="trade-link-section">
+                    <label className="trade-link-section__label">
+                      Link de trocas
+                    </label>
+
+                    <div className="trade-link-section__input-row">
+                      <span className="trade-link-section__prefix">
+                        /trocas/
+                      </span>
+                      <input
+                        type="text"
+                        className="trade-link-section__input"
+                        placeholder="seu-nome"
+                        value={tradeUsername}
+                        onChange={(e) =>
+                          setTradeUsername(e.target.value.replace(/\s/g, ""))
+                        }
+                        maxLength={20}
+                      />
+                    </div>
+
+                    <label className="trade-link-section__checkbox">
+                      <input
+                        type="checkbox"
+                        checked={tradeLinkAtivo}
+                        onChange={(e) => setTradeLinkAtivo(e.target.checked)}
+                      />
+                      <span>Ativar link de trocas</span>
+                    </label>
+
+                    <div className="trade-link-section__actions">
+                      <button
+                        type="button"
+                        className="trade-link-section__save"
+                        onClick={handleSaveTradeLink}
+                        disabled={isLoadingTrade}
+                      >
+                        {isLoadingTrade ? "Salvando..." : "Salvar"}
+                      </button>
+
+                      {tradeLinkAtivo && tradeUsername && (
+                        <button
+                          type="button"
+                          className="trade-link-section__copy"
+                          onClick={handleCopyTradeLink}
+                        >
+                          Copiar link
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <button
                   className="auth-dropdown__primary-action"

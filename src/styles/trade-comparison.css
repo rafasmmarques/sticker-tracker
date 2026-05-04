@@ -1,0 +1,126 @@
+.trade-comparison {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(23, 27, 95, 0.1);
+}
+
+.trade-comparison__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f5ef;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  color: #667085;
+  cursor: pointer;
+}
+
+.trade-comparison__content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.trade-comparison__side {
+  flex: 1;
+  min-width: 0;
+}
+
+.trade-comparison__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #171b5f;
+}
+
+.trade-comparison__subtitle {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #667085;
+}
+
+.trade-comparison__empty {
+  margin: 0;
+  padding: 12px;
+  background: #f4f5ef;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #667085;
+  text-align: center;
+}
+
+.trade-comparison__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.trade-comparison__badge {
+  display: inline-block;
+  padding: 3px 6px;
+  background: #dbeafe;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.trade-comparison__more {
+  display: inline-block;
+  padding: 3px 6px;
+  font-size: 11px;
+  color: #667085;
+}
+
+.trade-comparison__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.trade-comparison__divider span {
+  font-size: 20px;
+  color: #d8242f;
+}
+
+.trade-comparison__copy {
+  width: 100%;
+  padding: 12px;
+  background: #171b5f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.trade-comparison__copy:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 600px) {
+  .trade-comparison__content {
+    flex-direction: column;
+  }
+
+  .trade-comparison__divider {
+    width: 100%;
+    padding: 8px 0;
+  }
+
+  .trade-comparison__divider span {
+    transform: rotate(90deg);
+  }
+}

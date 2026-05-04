@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Routes, Route } from "react-router";
 import { AppHero } from "./components/AppHero";
 import { AppNavbar } from "./components/AppNavbar";
 import { BackToTopButton } from "./components/BackToTopButton";
@@ -6,6 +7,7 @@ import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { StickerGrid } from "./components/StickerGrid";
 import { AppFooter } from "./components/AppFooter";
+import { PublicTradePage } from "./pages/PublicTradePage";
 import { useToast } from "./hooks/useToast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
@@ -137,41 +139,57 @@ function App() {
   }
 
   return (
-    <main id="top" className="app-shell">
-      <AppNavbar user={user} />
-
-      <AppHero
-        onSaveCollection={handleSaveCollection}
-        isSavingCollection={isSyncing}
+    <Routes>
+      <Route
+        path="/trocas/:username"
+        element={
+          <PublicTradePage
+            userId={user?.id}
+            collection={collection}
+          />
+        }
       />
+      <Route
+        path="*"
+        element={
+          <main id="top" className="app-shell">
+            <AppNavbar user={user} />
 
-      <CollectionStats summary={summary} />
+            <AppHero
+              onSaveCollection={handleSaveCollection}
+              isSavingCollection={isSyncing}
+            />
 
-      <CollectionToolbar
-        search={search}
-        onSearchChange={setSearch}
-        onCopyMissingStickers={copyMissingStickers}
-        showOnlyMissing={showOnlyMissing}
-        onShowOnlyMissingChange={setShowOnlyMissing}
-        selectedGroup={selectedGroup}
-        onGroupChange={setSelectedGroup}
-        groups={groups}
+            <CollectionStats summary={summary} />
+
+            <CollectionToolbar
+              search={search}
+              onSearchChange={setSearch}
+              onCopyMissingStickers={copyMissingStickers}
+              showOnlyMissing={showOnlyMissing}
+              onShowOnlyMissingChange={setShowOnlyMissing}
+              selectedGroup={selectedGroup}
+              onGroupChange={setSelectedGroup}
+              groups={groups}
+            />
+
+            <StickerGrid
+              stickers={filteredStickers}
+              collection={collection}
+              onIncreaseQuantity={increaseStickerQuantity}
+              onDecreaseQuantity={decreaseStickerQuantity}
+            />
+
+            <BackToTopButton />
+
+            <AppFooter
+              developerName="Rafael Marques"
+              pixKey="61981141486"
+            />
+          </main>
+        }
       />
-
-      <StickerGrid
-        stickers={filteredStickers}
-        collection={collection}
-        onIncreaseQuantity={increaseStickerQuantity}
-        onDecreaseQuantity={decreaseStickerQuantity}
-      />
-
-      <BackToTopButton />
-
-      <AppFooter
-        developerName="Rafael Marques"
-        pixKey="61981141486"
-      />
-    </main>
+    </Routes>
   );
 }
 
