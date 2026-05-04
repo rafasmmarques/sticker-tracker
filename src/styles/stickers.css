@@ -16,7 +16,7 @@
     min-height: 224px;
     grid-template-rows: auto 1fr auto;
     overflow: hidden;
-    border: 1px solid rgba(20, 33, 61, 0.1);
+    border: 2px solid var(--team-primary, rgba(20, 33, 61, 0.1));
     border-radius: 28px;
     background:
         radial-gradient(circle at 50% 34%, rgba(23, 86, 169, 0.11), transparent 36%),
@@ -33,8 +33,8 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(145deg, var(--card-accent-primary, rgba(216, 36, 47, 0.08)), transparent 30%),
-        linear-gradient(315deg, var(--card-accent-secondary, rgba(155, 207, 67, 0.1)), transparent 28%);
+        linear-gradient(145deg, var(--team-primary, rgba(23, 27, 95, 0.08)), transparent 30%),
+        linear-gradient(315deg, var(--team-secondary, rgba(155, 207, 67, 0.1)), transparent 28%);
     content: '';
     opacity: 0.95;
 }
@@ -55,6 +55,24 @@
 .sticker-card--canada {
     --card-accent-primary: rgba(216, 36, 47, 0.16);
     --card-accent-secondary: rgba(255, 255, 255, 0.42);
+}
+
+.sticker-card__art {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-height: 108px;
+    place-items: center;
+    padding: 18px;
+}
+
+.sticker-card__flag {
+    width: 100%;
+    max-width: 102px;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(20, 33, 61, 0.12));
 }
 
 .sticker-card--mexico {

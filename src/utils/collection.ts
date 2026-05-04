@@ -51,6 +51,8 @@ export function getStickersWithoutQuantity(
   );
 }
 
+export const filterStickersMissing = getStickersWithoutQuantity;
+
 export function calculateCollectionSummary(
   stickers: Sticker[],
   collection: StickerCollection,

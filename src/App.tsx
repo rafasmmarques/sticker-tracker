@@ -5,6 +5,7 @@ import { BackToTopButton } from "./components/BackToTopButton";
 import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { StickerGrid } from "./components/StickerGrid";
+import { AppFooter } from "./components/AppFooter";
 import { useToast } from "./hooks/useToast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
@@ -13,11 +14,14 @@ import {
   calculateCollectionSummary,
   filterStickersByCode,
   getStickersWithoutQuantity,
+  filterStickersMissing,
 } from "./utils/collection";
 import "./index.css";
 
 function App() {
   const [search, setSearch] = useState("");
+  const [showOnlyMissing, setShowOnlyMissing] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState("");
   const { showToast } = useToast();
   const { user } = useAuth();
   const { stickers } = useStickerCatalog();
@@ -31,12 +35,55 @@ function App() {
   } = useStickerCollection(user?.id);
 
   const filteredStickers = useMemo(() => {
-    return filterStickersByCode(stickers, search);
-  }, [stickers, search]);
+    let result = filterStickersByCode(stickers, search);
+
+    if (showOnlyMissing) {
+      result = filterStickersMissing(result, collection);
+    }
+
+    if (selectedGroup) {
+      if (selectedGroup === "specials") {
+        result = result.filter(
+          (sticker) =>
+            sticker.isSpecial ||
+            sticker.specialFinish === "introduction" ||
+            sticker.specialFinish === "museum" ||
+            sticker.specialFinish === "special"
+        );
+      } else {
+        result = result.filter(
+          (sticker) => sticker.team?.fifaCode === selectedGroup
+        );
+      }
+    }
+
+    return result;
+  }, [stickers, search, showOnlyMissing, selectedGroup, collection]);
 
   const missingStickers = useMemo(() => {
     return getStickersWithoutQuantity(stickers, collection);
   }, [stickers, collection]);
+
+  const groups = useMemo(() => {
+    const groupMap = new Map<string, { fifaCode: string; name: string }[]>();
+
+    stickers.forEach((sticker) => {
+      const groupLetter = sticker.team?.groupLetter;
+      const fifaCode = sticker.team?.fifaCode;
+      const teamName = sticker.team?.name;
+      if (groupLetter && fifaCode && teamName) {
+        const existing = groupMap.get(groupLetter) ?? [];
+        if (!existing.some((t) => t.fifaCode === fifaCode)) {
+          existing.push({ fifaCode, name: teamName });
+          groupMap.set(groupLetter, existing);
+        }
+      }
+    });
+
+    return Array.from(groupMap.entries())
+      .map(([letter, teams]) => ({ letter, teams }))
+      .sort((a, b) => a.letter.localeCompare(b.letter));
+  }, [stickers]);
 
   const summary = useMemo(() => {
     return calculateCollectionSummary(stickers, collection, stickers.length);
@@ -104,6 +151,11 @@ function App() {
         search={search}
         onSearchChange={setSearch}
         onCopyMissingStickers={copyMissingStickers}
+        showOnlyMissing={showOnlyMissing}
+        onShowOnlyMissingChange={setShowOnlyMissing}
+        selectedGroup={selectedGroup}
+        onGroupChange={setSelectedGroup}
+        groups={groups}
       />
 
       <StickerGrid
@@ -114,6 +166,11 @@ function App() {
       />
 
       <BackToTopButton />
+
+      <AppFooter
+        developerName="Rafael Marques"
+        pixKey="rafaelmarques@email.com"
+      />
     </main>
   );
 }

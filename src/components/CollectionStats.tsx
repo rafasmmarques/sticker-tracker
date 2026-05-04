@@ -10,6 +10,12 @@ export function CollectionStats({ summary }: CollectionStatsProps) {
       <article className="stat-card stat-card--primary">
         <span>Progresso</span>
         <strong>{summary.completionPercentage}%</strong>
+        <div className="stat-card__progress">
+          <div
+            className="stat-card__progress-bar"
+            style={{ width: `${summary.completionPercentage}%` }}
+          />
+        </div>
         <small>{summary.ownedCount} figurinhas marcadas</small>
       </article>
 
