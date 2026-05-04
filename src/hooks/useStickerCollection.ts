@@ -162,6 +162,22 @@ export function useStickerCollection(userId?: string) {
     });
   }
 
+  function markAllStickers(stickerIds: number[]) {
+    setCollection((currentCollection) => {
+      const updated = { ...currentCollection };
+      stickerIds.forEach((id) => {
+        if (!updated[id]) {
+          updated[id] = 1;
+        }
+      });
+      return updated;
+    });
+  }
+
+  function clearCollection() {
+    setCollection({});
+  }
+
   async function saveCollection(): Promise<SaveCollectionResult> {
     localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(collection));
 
@@ -198,5 +214,7 @@ export function useStickerCollection(userId?: string) {
     saveCollection,
     increaseStickerQuantity,
     decreaseStickerQuantity,
+    markAllStickers,
+    clearCollection,
   };
 }
