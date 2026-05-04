@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type GroupOption = {
   letter: string;
   teams: { fifaCode: string; name: string }[];
@@ -12,6 +14,9 @@ type CollectionToolbarProps = {
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   groups: GroupOption[];
+  onMarkAllStickers?: () => void;
+  onClearCollection?: () => void;
+  allStickersCount?: number;
 };
 
 export function CollectionToolbar({
@@ -23,7 +28,39 @@ export function CollectionToolbar({
   selectedGroup,
   onGroupChange,
   groups,
+  onMarkAllStickers,
+  onClearCollection,
+  allStickersCount = 0,
 }: CollectionToolbarProps) {
+  const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
+  const [isCheckedMarkAll, setIsCheckedMarkAll] = useState(false);
+
+  const handleMarkAllToggle = (checked: boolean) => {
+    if (!checked) {
+      setIsCheckedMarkAll(false);
+      return;
+    }
+    setIsCheckedMarkAll(true);
+    setShowMarkAllDialog(true);
+  };
+
+  const handleConfirmMarkAll = () => {
+    onMarkAllStickers?.();
+    setShowMarkAllDialog(false);
+    setIsCheckedMarkAll(false);
+  };
+
+  const handleClearCollection = () => {
+    onClearCollection?.();
+    setShowMarkAllDialog(false);
+    setIsCheckedMarkAll(false);
+  };
+
+  const handleCancelDialog = () => {
+    setShowMarkAllDialog(false);
+    setIsCheckedMarkAll(false);
+  };
+
   return (
     <section className="collection-toolbar" aria-label="Filtros da coleção">
       <div>
@@ -40,6 +77,17 @@ export function CollectionToolbar({
           />
           <span>Faltando</span>
         </label>
+
+        {onMarkAllStickers && (
+          <label className="checkbox-filtro">
+            <input
+              type="checkbox"
+              checked={isCheckedMarkAll}
+              onChange={(e) => handleMarkAllToggle(e.target.checked)}
+            />
+            <span>Marcar todas</span>
+          </label>
+        )}
 
         <select
           className="select-grupo"
@@ -71,6 +119,41 @@ export function CollectionToolbar({
           Copiar lista
         </button>
       </div>
+
+      {showMarkAllDialog && (
+        <div className="dialog-overlay" onClick={handleCancelDialog}>
+          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Marcar todas as figurinhas?</h3>
+            <p>
+              Tem certeza que deseja marcar todas as figurinhas? Isso vai
+              marcar <strong>{allStickersCount}</strong> figurinhas como tenho.
+            </p>
+            <div className="dialog-actions">
+              <button
+                type="button"
+                className="btn-cancelar"
+                onClick={handleCancelDialog}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn-zerar"
+                onClick={handleClearCollection}
+              >
+                Zerar Tudo
+              </button>
+              <button
+                type="button"
+                className="btn-confirmar"
+                onClick={handleConfirmMarkAll}
+              >
+                Marcar Todas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

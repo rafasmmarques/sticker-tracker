@@ -34,7 +34,11 @@ function App() {
     saveCollection,
     increaseStickerQuantity,
     decreaseStickerQuantity,
+    markAllStickers,
+    clearCollection,
   } = useStickerCollection(user?.id);
+
+  const allStickerIds = useMemo(() => stickers.map((s) => s.id), [stickers]);
 
   const filteredStickers = useMemo(() => {
     let result = filterStickersByCode(stickers, search);
@@ -171,6 +175,9 @@ function App() {
               selectedGroup={selectedGroup}
               onGroupChange={setSelectedGroup}
               groups={groups}
+              onMarkAllStickers={() => markAllStickers(allStickerIds)}
+              onClearCollection={clearCollection}
+              allStickersCount={allStickerIds.length}
             />
 
             <StickerGrid
