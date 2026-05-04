@@ -53,6 +53,15 @@ export function getStickersWithoutQuantity(
 
 export const filterStickersMissing = getStickersWithoutQuantity;
 
+export function getRepeatedStickers(
+  stickers: Sticker[],
+  collection: StickerCollection,
+): Sticker[] {
+  return stickers.filter(
+    (sticker) => getStickerQuantity(collection, sticker.id) > 1,
+  );
+}
+
 export function calculateCollectionSummary(
   stickers: Sticker[],
   collection: StickerCollection,

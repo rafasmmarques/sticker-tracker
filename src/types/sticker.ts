@@ -54,3 +54,17 @@ export type CollectionSummary = {
   repeatedCount: number;
   completionPercentage: number;
 };
+
+export type Profile = {
+  id: string;
+  username: string | null;
+  displayName: string | null;
+  linkAtivo: boolean;
+  createdAt: string;
+};
+
+export type PublicProfile = {
+  id: string;
+  username: string;
+  linkAtivo: boolean;
+};
