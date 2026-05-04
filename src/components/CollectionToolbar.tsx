@@ -33,32 +33,19 @@ export function CollectionToolbar({
   allStickersCount = 0,
 }: CollectionToolbarProps) {
   const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
-  const [isCheckedMarkAll, setIsCheckedMarkAll] = useState(false);
-
-  const handleMarkAllToggle = (checked: boolean) => {
-    if (!checked) {
-      setIsCheckedMarkAll(false);
-      return;
-    }
-    setIsCheckedMarkAll(true);
-    setShowMarkAllDialog(true);
-  };
 
   const handleConfirmMarkAll = () => {
     onMarkAllStickers?.();
     setShowMarkAllDialog(false);
-    setIsCheckedMarkAll(false);
   };
 
   const handleClearCollection = () => {
     onClearCollection?.();
     setShowMarkAllDialog(false);
-    setIsCheckedMarkAll(false);
   };
 
   const handleCancelDialog = () => {
     setShowMarkAllDialog(false);
-    setIsCheckedMarkAll(false);
   };
 
   return (
@@ -79,14 +66,13 @@ export function CollectionToolbar({
         </label>
 
         {onMarkAllStickers && (
-          <label className="checkbox-filtro">
-            <input
-              type="checkbox"
-              checked={isCheckedMarkAll}
-              onChange={(e) => handleMarkAllToggle(e.target.checked)}
-            />
-            <span>Marcar todas</span>
-          </label>
+          <button
+            type="button"
+            className="btn-mark-all"
+            onClick={() => setShowMarkAllDialog(true)}
+          >
+            Marcar todas
+          </button>
         )}
 
         <select
