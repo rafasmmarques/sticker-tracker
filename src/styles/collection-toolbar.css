@@ -158,28 +158,16 @@
     color: #fff;
 }
 
-.btn-cancelar:hover {
-    background: #4b5563;
-}
-
 .btn-confirmar {
-    background: var(--color-green);
+    background: #177345;
     border: none;
     color: #fff;
-}
-
-.btn-confirmar:hover {
-    background: #145c38;
 }
 
 .btn-zerar {
-    background: var(--color-red);
+    background: #d8242f;
     border: none;
     color: #fff;
-}
-
-.btn-zerar:hover {
-    background: #991b1b;
 }
 
 @keyframes fadeIn {
