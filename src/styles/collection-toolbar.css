@@ -153,13 +153,13 @@
 }
 
 .btn-cancelar {
-    background: #9ca3af;
+    background: #6b7280;
     border: none;
     color: #fff;
 }
 
 .btn-cancelar:hover {
-    background: #6b7280;
+    background: #4b5563;
 }
 
 .btn-confirmar {
@@ -179,7 +179,7 @@
 }
 
 .btn-zerar:hover {
-    background: #b91c1c;
+    background: #991b1b;
 }
 
 @keyframes fadeIn {
