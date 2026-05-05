@@ -91,7 +91,7 @@
 }
 
 .sticker-row__btn--remove {
-    background: rgba(216, 36, 47, 0.1);
+    background: #fff;
     color: var(--color-red);
 }
 
@@ -101,18 +101,21 @@
 }
 
 .sticker-row__btn--remove:disabled {
-    opacity: 0.3;
     cursor: not-allowed;
 }
 
 .sticker-row__btn--add {
-    background: rgba(23, 115, 69, 0.1);
+    background: #fff;
     color: var(--color-green);
 }
 
 .sticker-row__btn--add:hover {
     background: var(--color-green);
     color: #fff;
+}
+
+.sticker-row__btn--add:disabled {
+    cursor: not-allowed;
 }
 
 @media (max-width: 400px) {

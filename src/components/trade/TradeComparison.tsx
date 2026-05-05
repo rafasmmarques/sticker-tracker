@@ -1,7 +1,8 @@
-import { useMemo } from "react";
-import type { Sticker, StickerCollection } from "../../types/sticker";
-import { getStickerQuantity } from "../../utils/collection";
+import { useMemo, useState } from "react";
+import type { Sticker, StickerCollection, TradeItem } from "../../types/sticker";
+import { calculateTradeSuggestion, formatTradeText } from "../../utils/trade";
 import { useToast } from "../../hooks/useToast";
+import { TradeConfirmModal } from "./TradeConfirmModal";
 import "../../styles/trade-comparison.css";
 
 type TradeComparisonProps = {
@@ -10,7 +11,43 @@ type TradeComparisonProps = {
   stickers: Sticker[];
   username: string;
   onClose: () => void;
+  onConfirmTrade?: (giveIds: number[], receiveIds: number[]) => void;
 };
+
+function renderBadge(item: TradeItem) {
+  const classes = [
+    "trade-comparison__badge",
+    item.isSpecial && "trade-comparison__badge--special",
+    item.isExtra && "trade-comparison__badge--extra",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <span key={item.stickerId} className={classes}>
+      {item.isSpecial && <span className="trade-comparison__star">⭐</span>}
+      {item.displayCode}
+      {item.quantity > 1 && <span className="trade-comparison__qty">×{item.quantity}</span>}
+    </span>
+  );
+}
+
+function renderItemList(items: TradeItem[], maxItems: number, emptyMessage: string) {
+  if (items.length === 0) {
+    return <p className="trade-comparison__empty">{emptyMessage}</p>;
+  }
+
+  return (
+    <>
+      <div className="trade-comparison__list">
+        {items.slice(0, maxItems).map(renderBadge)}
+        {items.length > maxItems && (
+          <span className="trade-comparison__more">+{items.length - maxItems}</span>
+        )}
+      </div>
+    </>
+  );
+}
 
 export function TradeComparison({
   myCollection,
@@ -18,60 +55,41 @@ export function TradeComparison({
   stickers,
   username,
   onClose,
+  onConfirmTrade,
 }: TradeComparisonProps) {
   const { showToast } = useToast();
+  const [showExtras, setShowExtras] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const result = useMemo(() => {
-    const youCanOffer: Sticker[] = [];
-    const youCanRequest: Sticker[] = [];
-
-    const myRepeated = new Set<number>();
-    const theirRepeated = new Set<number>();
-    const theyNeed = new Set<number>();
-    const iNeed = new Set<number>();
-
-    stickers.forEach((sticker) => {
-      const myQty = getStickerQuantity(myCollection, sticker.id);
-      const theirQty = getStickerQuantity(theirCollection, sticker.id);
-
-      if (myQty > 1) {
-        myRepeated.add(sticker.id);
-      }
-      if (theirQty > 1) {
-        theirRepeated.add(sticker.id);
-      }
-      if (theirQty === 0) {
-        theyNeed.add(sticker.id);
-      }
-      if (myQty === 0) {
-        iNeed.add(sticker.id);
-      }
-    });
-
-    stickers.forEach((sticker) => {
-      const id = sticker.id;
-
-      if (myRepeated.has(id) && theyNeed.has(id)) {
-        youCanOffer.push(sticker);
-      }
-
-      if (theirRepeated.has(id) && iNeed.has(id)) {
-        youCanRequest.push(sticker);
-      }
-    });
-
-    return { youCanOffer, youCanRequest };
+  const suggestion = useMemo(() => {
+    return calculateTradeSuggestion(myCollection, theirCollection, stickers);
   }, [myCollection, theirCollection, stickers]);
 
-  const offerText = result.youCanOffer
-    .map((s) => s.displayCode)
-    .join(", ");
-  const requestText = result.youCanRequest
-    .map((s) => s.displayCode)
-    .join(", ");
+  const giveNormal = useMemo(
+    () => suggestion.giveToThem.filter((i) => !i.isSpecial),
+    [suggestion]
+  );
+  const giveSpecial = useMemo(
+    () => suggestion.giveToThem.filter((i) => i.isSpecial),
+    [suggestion]
+  );
+  const receiveNormal = useMemo(
+    () => suggestion.receiveFromThem.filter((i) => !i.isSpecial),
+    [suggestion]
+  );
+  const receiveSpecial = useMemo(
+    () => suggestion.receiveFromThem.filter((i) => i.isSpecial),
+    [suggestion]
+  );
+
+  const hasSpecials =
+    giveSpecial.length > 0 ||
+    receiveSpecial.length > 0 ||
+    suggestion.extrasForMe.some((i) => i.isSpecial) ||
+    suggestion.extrasForThem.some((i) => i.isSpecial);
 
   async function copyComparison() {
-    const text = `Minha coleção vs ${username}\n\n🎁 Eu te passo: ${offerText || "nada"}\n\n📥 Você me passa: ${requestText || "nada"}\n\n🔗 Ver: ${window.location.href}`;
+    const text = formatTradeText(suggestion, username, showExtras, window.location.href);
 
     await navigator.clipboard.writeText(text);
 
@@ -81,6 +99,29 @@ export function TradeComparison({
       variant: "success",
     });
   }
+
+  function handleConfirmTrade() {
+    if (!onConfirmTrade) return;
+
+    setShowConfirmModal(true);
+  }
+
+  function handleModalConfirm() {
+    if (!onConfirmTrade) return;
+
+    const giveIds = suggestion.giveToThem.map((i) => i.stickerId);
+    const receiveIds = suggestion.receiveFromThem.map((i) => i.stickerId);
+
+    onConfirmTrade(giveIds, receiveIds);
+    setShowConfirmModal(false);
+    onClose();
+  }
+
+  const totalGive =
+    suggestion.giveToThem.length + (showExtras ? suggestion.extrasForThem.length : 0);
+  const totalReceive =
+    suggestion.receiveFromThem.length + (showExtras ? suggestion.extrasForMe.length : 0);
+  const imbalance = totalGive - totalReceive;
 
   return (
     <div className="trade-comparison">
@@ -93,32 +134,30 @@ export function TradeComparison({
         ×
       </button>
 
+      <div className="trade-comparison__header">
+        <h3 className="trade-comparison__main-title">Troca ideal</h3>
+      </div>
+
       <div className="trade-comparison__content">
         <div className="trade-comparison__side">
-          <h3 className="trade-comparison__title">
-            🎁 Você pode oferecer
-          </h3>
-          <p className="trade-comparison__subtitle">
-            Suas repetidas que {username} precisa
-          </p>
-          {result.youCanOffer.length === 0 ? (
-            <p className="trade-comparison__empty">Nenhuma oferta possível</p>
+          <h4 className="trade-comparison__title">Você entrega</h4>
+          {giveNormal.length === 0 && giveSpecial.length === 0 ? (
+            <p className="trade-comparison__empty">Nenhuma figurinha</p>
           ) : (
-            <div className="trade-comparison__list">
-              {result.youCanOffer.slice(0, 30).map((sticker) => (
-                <span
-                  key={sticker.id}
-                  className="trade-comparison__badge"
-                >
-                  {sticker.displayCode}
-                </span>
-              ))}
-              {result.youCanOffer.length > 30 && (
-                <span className="trade-comparison__more">
-                  +{result.youCanOffer.length - 30}
-                </span>
+            <>
+              {giveNormal.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">Normais</span>
+                  {renderItemList(giveNormal, 15, "")}
+                </>
               )}
-            </div>
+              {giveSpecial.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">⭐ Especiais</span>
+                  {renderItemList(giveSpecial, 10, "")}
+                </>
+              )}
+            </>
           )}
         </div>
 
@@ -127,43 +166,105 @@ export function TradeComparison({
         </div>
 
         <div className="trade-comparison__side">
-          <h3 className="trade-comparison__title">
-            📥 Você pode pedir
-          </h3>
-          <p className="trade-comparison__subtitle">
-            Repetidas de {username} que você precisa
-          </p>
-          {result.youCanRequest.length === 0 ? (
-            <p className="trade-comparison__empty">
-              Nenhuma solicitação possível
-            </p>
+          <h4 className="trade-comparison__title">Você recebe</h4>
+          {receiveNormal.length === 0 && receiveSpecial.length === 0 ? (
+            <p className="trade-comparison__empty">Nenhuma figurinha</p>
           ) : (
-            <div className="trade-comparison__list">
-              {result.youCanRequest.slice(0, 30).map((sticker) => (
-                <span
-                  key={sticker.id}
-                  className="trade-comparison__badge"
-                >
-                  {sticker.displayCode}
-                </span>
-              ))}
-              {result.youCanRequest.length > 30 && (
-                <span className="trade-comparison__more">
-                  +{result.youCanRequest.length - 30}
-                </span>
+            <>
+              {receiveNormal.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">Normais</span>
+                  {renderItemList(receiveNormal, 15, "")}
+                </>
               )}
-            </div>
+              {receiveSpecial.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">⭐ Especiais</span>
+                  {renderItemList(receiveSpecial, 10, "")}
+                </>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      <button
-        type="button"
-        className="trade-comparison__copy"
-        onClick={copyComparison}
-      >
-        Copiar resultado
-      </button>
+      {imbalance !== 0 && (
+        <div className="trade-comparison__imbalance">
+          <span className="trade-comparison__imbalance-text">
+            {imbalance > 0
+              ? `Diferença: você entrega ${imbalance} a mais`
+              : `Diferença: você recebe ${Math.abs(imbalance)} a mais`}
+          </span>
+        </div>
+      )}
+
+      {(suggestion.extrasForMe.length > 0 || suggestion.extrasForThem.length > 0) && (
+        <div className="trade-comparison__extras">
+          <label className="trade-comparison__extras-toggle">
+            <input
+              type="checkbox"
+              checked={showExtras}
+              onChange={(e) => setShowExtras(e.target.checked)}
+            />
+            <span>Completar com repetidas extras</span>
+          </label>
+
+          {showExtras && (
+            <div className="trade-comparison__extras-content">
+              {imbalance > 0 && suggestion.extrasForMe.length > 0 && (
+                <div className="trade-comparison__extras-section">
+                  <span>Você recebe também (⭐):</span>
+                  <div className="trade-comparison__list">
+                    {suggestion.extrasForMe.slice(0, 10).map(renderBadge)}
+                  </div>
+                </div>
+              )}
+              {imbalance < 0 && suggestion.extrasForThem.length > 0 && (
+                <div className="trade-comparison__extras-section">
+                  <span>Você entrega também (⭐):</span>
+                  <div className="trade-comparison__list">
+                    {suggestion.extrasForThem.slice(0, 10).map(renderBadge)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasSpecials && (
+        <div className="trade-comparison__legend">
+          <span>⭐ = Especial</span>
+        </div>
+      )}
+
+      <div className="trade-comparison__actions">
+        <button
+          type="button"
+          className="trade-comparison__copy"
+          onClick={copyComparison}
+        >
+          Copiar resultado
+        </button>
+        {onConfirmTrade && suggestion.giveToThem.length > 0 && (
+          <button
+            type="button"
+            className="trade-comparison__confirm"
+            onClick={handleConfirmTrade}
+          >
+            Confirmar troca
+          </button>
+        )}
+      </div>
+
+      {showConfirmModal && (
+        <TradeConfirmModal
+          giveItems={suggestion.giveToThem}
+          receiveItems={suggestion.receiveFromThem}
+          onCancel={() => setShowConfirmModal(false)}
+          onConfirm={handleModalConfirm}
+        />
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { StickerGrid } from "./components/StickerGrid";
 import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
+import { TradeLinkSearch } from "./components/trade/TradeLinkSearch";
 import { useToast } from "./hooks/useToast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
@@ -42,6 +43,7 @@ function App() {
     markAllStickers,
     clearCollection,
     importMissingList,
+    applyTrade,
   } = useStickerCollection(user?.id);
 
   const allStickerIds = useMemo(() => stickers.map((s) => s.id), [stickers]);
@@ -167,6 +169,7 @@ function App() {
           <PublicTradePage
             userId={user?.id}
             collection={collection}
+            applyTrade={applyTrade}
           />
         }
       />
@@ -182,6 +185,8 @@ function App() {
             />
 
             <CollectionStats summary={summary} />
+
+            <TradeLinkSearch />
 
             <CollectionToolbar
               search={search}

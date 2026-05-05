@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, useSearchParams, Link } from "react-router";
 import type { Sticker, StickerCollection } from "../types/sticker";
 import {
   getPublicProfileByUsername,
@@ -18,14 +18,18 @@ import "../styles/trade-page.css";
 type PublicTradePageProps = {
   userId?: string;
   collection?: StickerCollection;
+  applyTrade?: (giveIds: number[], receiveIds: number[]) => void;
 };
 
 export function PublicTradePage({
   userId,
   collection,
+  applyTrade,
 }: PublicTradePageProps) {
   const params = useParams<{ username: string }>();
+  const [searchParams] = useSearchParams();
   const username = params.username ?? "";
+  const shouldCompare = searchParams.get("comparar") === "1";
   const { showToast } = useToast();
   const { stickers } = useStickerCatalog();
 
@@ -33,7 +37,7 @@ export function PublicTradePage({
     useState<StickerCollection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showComparison, setShowComparison] = useState(false);
+  const [showComparison, setShowComparison] = useState(shouldCompare);
 
   const initialError = !username ? "Nome de usuário não encontrado." : null;
 
@@ -224,7 +228,7 @@ export function PublicTradePage({
         </section>
       )}
 
-      {userId && collection && publicCollection && (
+      {userId && collection && publicCollection && Object.keys(collection).length > 0 && (
         <section className="trade-page__compare">
           {!showComparison ? (
             <button
@@ -241,8 +245,22 @@ export function PublicTradePage({
               stickers={stickers}
               username={username!}
               onClose={() => setShowComparison(false)}
+              onConfirmTrade={userId ? applyTrade : undefined}
             />
           )}
+        </section>
+      )}
+
+      {!userId && collection && publicCollection && Object.keys(collection).length > 0 && (
+        <section className="trade-page__compare">
+          <div className="trade-page__login-prompt">
+            <p>
+              Para fazer uma comparação automática com a sua coleção, faça login ou crie uma conta.
+            </p>
+            <Link to="/" className="trade-page__login-btn">
+              Entrar ou criar conta
+            </Link>
+          </div>
         </section>
       )}
 

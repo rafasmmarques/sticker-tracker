@@ -142,6 +142,31 @@
   text-align: center;
 }
 
+.trade-page__login-prompt {
+  padding: 20px;
+  background: #fef3c7;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.trade-page__login-prompt p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #92400e;
+}
+
+.trade-page__login-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #171b5f;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .trade-page__list {
   background: #fff;
   border-radius: 16px;

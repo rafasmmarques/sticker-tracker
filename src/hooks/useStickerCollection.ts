@@ -240,6 +240,28 @@ export function useStickerCollection(userId?: string) {
     }
   }
 
+  function applyTrade(outgoingStickerIds: number[], incomingStickerIds: number[]) {
+    setCollection((currentCollection) => {
+      const updated = { ...currentCollection };
+
+      for (const id of outgoingStickerIds) {
+        const currentQty = updated[id] ?? 0;
+        if (currentQty > 1) {
+          updated[id] = currentQty - 1;
+        } else {
+          delete updated[id];
+        }
+      }
+
+      for (const id of incomingStickerIds) {
+        const currentQty = updated[id] ?? 0;
+        updated[id] = currentQty + 1;
+      }
+
+      return updated;
+    });
+  }
+
   return {
     collection,
     isSyncing,
@@ -250,5 +272,6 @@ export function useStickerCollection(userId?: string) {
     markAllStickers,
     clearCollection,
     importMissingList,
+    applyTrade,
   };
 }
