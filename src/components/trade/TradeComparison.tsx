@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Sticker, StickerCollection } from "../../types/sticker";
+import type { Sticker, StickerCollection, TradeItem } from "../../types/sticker";
 import { calculateTradeSuggestion, formatTradeText } from "../../utils/trade";
 import { useToast } from "../../hooks/useToast";
 import { TradeConfirmModal } from "./TradeConfirmModal";
@@ -13,6 +13,41 @@ type TradeComparisonProps = {
   onClose: () => void;
   onConfirmTrade?: (giveIds: number[], receiveIds: number[]) => void;
 };
+
+function renderBadge(item: TradeItem) {
+  const classes = [
+    "trade-comparison__badge",
+    item.isSpecial && "trade-comparison__badge--special",
+    item.isExtra && "trade-comparison__badge--extra",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <span key={item.stickerId} className={classes}>
+      {item.isSpecial && <span className="trade-comparison__star">⭐</span>}
+      {item.displayCode}
+      {item.quantity > 1 && <span className="trade-comparison__qty">×{item.quantity}</span>}
+    </span>
+  );
+}
+
+function renderItemList(items: TradeItem[], maxItems: number, emptyMessage: string) {
+  if (items.length === 0) {
+    return <p className="trade-comparison__empty">{emptyMessage}</p>;
+  }
+
+  return (
+    <>
+      <div className="trade-comparison__list">
+        {items.slice(0, maxItems).map(renderBadge)}
+        {items.length > maxItems && (
+          <span className="trade-comparison__more">+{items.length - maxItems}</span>
+        )}
+      </div>
+    </>
+  );
+}
 
 export function TradeComparison({
   myCollection,
@@ -29,6 +64,29 @@ export function TradeComparison({
   const suggestion = useMemo(() => {
     return calculateTradeSuggestion(myCollection, theirCollection, stickers);
   }, [myCollection, theirCollection, stickers]);
+
+  const giveNormal = useMemo(
+    () => suggestion.giveToThem.filter((i) => !i.isSpecial),
+    [suggestion]
+  );
+  const giveSpecial = useMemo(
+    () => suggestion.giveToThem.filter((i) => i.isSpecial),
+    [suggestion]
+  );
+  const receiveNormal = useMemo(
+    () => suggestion.receiveFromThem.filter((i) => !i.isSpecial),
+    [suggestion]
+  );
+  const receiveSpecial = useMemo(
+    () => suggestion.receiveFromThem.filter((i) => i.isSpecial),
+    [suggestion]
+  );
+
+  const hasSpecials =
+    giveSpecial.length > 0 ||
+    receiveSpecial.length > 0 ||
+    suggestion.extrasForMe.some((i) => i.isSpecial) ||
+    suggestion.extrasForThem.some((i) => i.isSpecial);
 
   async function copyComparison() {
     const text = formatTradeText(suggestion, username, showExtras, window.location.href);
@@ -59,8 +117,10 @@ export function TradeComparison({
     onClose();
   }
 
-  const totalGive = suggestion.giveToThem.length + (showExtras ? suggestion.extrasForThem.length : 0);
-  const totalReceive = suggestion.receiveFromThem.length + (showExtras ? suggestion.extrasForMe.length : 0);
+  const totalGive =
+    suggestion.giveToThem.length + (showExtras ? suggestion.extrasForThem.length : 0);
+  const totalReceive =
+    suggestion.receiveFromThem.length + (showExtras ? suggestion.extrasForMe.length : 0);
   const imbalance = totalGive - totalReceive;
 
   return (
@@ -81,20 +141,23 @@ export function TradeComparison({
       <div className="trade-comparison__content">
         <div className="trade-comparison__side">
           <h4 className="trade-comparison__title">Você entrega</h4>
-          {suggestion.giveToThem.length === 0 ? (
+          {giveNormal.length === 0 && giveSpecial.length === 0 ? (
             <p className="trade-comparison__empty">Nenhuma figurinha</p>
           ) : (
-            <div className="trade-comparison__list">
-              {suggestion.giveToThem.slice(0, 20).map((item) => (
-                <span key={item.stickerId} className="trade-comparison__badge">
-                  {item.displayCode}
-                  {item.quantity > 1 && <span className="trade-comparison__qty">×{item.quantity}</span>}
-                </span>
-              ))}
-              {suggestion.giveToThem.length > 20 && (
-                <span className="trade-comparison__more">+{suggestion.giveToThem.length - 20}</span>
+            <>
+              {giveNormal.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">Normais</span>
+                  {renderItemList(giveNormal, 15, "")}
+                </>
               )}
-            </div>
+              {giveSpecial.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">⭐ Especiais</span>
+                  {renderItemList(giveSpecial, 10, "")}
+                </>
+              )}
+            </>
           )}
         </div>
 
@@ -104,20 +167,23 @@ export function TradeComparison({
 
         <div className="trade-comparison__side">
           <h4 className="trade-comparison__title">Você recebe</h4>
-          {suggestion.receiveFromThem.length === 0 ? (
+          {receiveNormal.length === 0 && receiveSpecial.length === 0 ? (
             <p className="trade-comparison__empty">Nenhuma figurinha</p>
           ) : (
-            <div className="trade-comparison__list">
-              {suggestion.receiveFromThem.slice(0, 20).map((item) => (
-                <span key={item.stickerId} className="trade-comparison__badge trade-comparison__badge--receive">
-                  {item.displayCode}
-                  {item.quantity > 1 && <span className="trade-comparison__qty">×{item.quantity}</span>}
-                </span>
-              ))}
-              {suggestion.receiveFromThem.length > 20 && (
-                <span className="trade-comparison__more">+{suggestion.receiveFromThem.length - 20}</span>
+            <>
+              {receiveNormal.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">Normais</span>
+                  {renderItemList(receiveNormal, 15, "")}
+                </>
               )}
-            </div>
+              {receiveSpecial.length > 0 && (
+                <>
+                  <span className="trade-comparison__group-label">⭐ Especiais</span>
+                  {renderItemList(receiveSpecial, 10, "")}
+                </>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -147,30 +213,28 @@ export function TradeComparison({
             <div className="trade-comparison__extras-content">
               {imbalance > 0 && suggestion.extrasForMe.length > 0 && (
                 <div className="trade-comparison__extras-section">
-                  <span>Você recebe também:</span>
+                  <span>Você recebe também (⭐):</span>
                   <div className="trade-comparison__list">
-                    {suggestion.extrasForMe.slice(0, 10).map((item) => (
-                      <span key={item.stickerId} className="trade-comparison__badge trade-comparison__badge--extra">
-                        {item.displayCode}
-                      </span>
-                    ))}
+                    {suggestion.extrasForMe.slice(0, 10).map(renderBadge)}
                   </div>
                 </div>
               )}
               {imbalance < 0 && suggestion.extrasForThem.length > 0 && (
                 <div className="trade-comparison__extras-section">
-                  <span>Você entrega também:</span>
+                  <span>Você entrega também (⭐):</span>
                   <div className="trade-comparison__list">
-                    {suggestion.extrasForThem.slice(0, 10).map((item) => (
-                      <span key={item.stickerId} className="trade-comparison__badge trade-comparison__badge--extra">
-                        {item.displayCode}
-                      </span>
-                    ))}
+                    {suggestion.extrasForThem.slice(0, 10).map(renderBadge)}
                   </div>
                 </div>
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {hasSpecials && (
+        <div className="trade-comparison__legend">
+          <span>⭐ = Especial</span>
         </div>
       )}
 

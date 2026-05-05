@@ -75,6 +75,7 @@ export type TradeItem = {
   quantity: number;
   playerName?: string | null;
   teamName?: string | null;
+  isSpecial: boolean;
   isExtra: boolean;
 };
 

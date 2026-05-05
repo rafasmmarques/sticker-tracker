@@ -10,9 +10,6 @@ export function calculateTradeSuggestion(
   const extrasForMe: TradeItem[] = [];
   const extrasForThem: TradeItem[] = [];
 
-  const stickerMap = new Map<number, Sticker>();
-  stickers.forEach((s) => stickerMap.set(s.id, s));
-
   stickers.forEach((sticker) => {
     const myQty = myCollection[sticker.id] ?? 0;
     const theirQty = theirCollection[sticker.id] ?? 0;
@@ -22,62 +19,97 @@ export function calculateTradeSuggestion(
 
     const theyNeed = theirQty === 0;
     const iNeed = myQty === 0;
+    const isSpecial = sticker.isSpecial || sticker.specialFinish !== null;
+
+    const baseItem = (available: number): TradeItem => ({
+      stickerId: sticker.id,
+      displayCode: sticker.displayCode,
+      quantity: available,
+      playerName: sticker.playerName,
+      teamName: sticker.team?.name,
+      isSpecial,
+      isExtra: false,
+    });
+
+    const extraItem = (available: number): TradeItem => ({
+      stickerId: sticker.id,
+      displayCode: sticker.displayCode,
+      quantity: available,
+      playerName: sticker.playerName,
+      teamName: sticker.team?.name,
+      isSpecial,
+      isExtra: true,
+    });
 
     if (myAvailable > 0 && theyNeed) {
-      giveToThem.push({
-        stickerId: sticker.id,
-        displayCode: sticker.displayCode,
-        quantity: myAvailable,
-        playerName: sticker.playerName,
-        teamName: sticker.team?.name,
-        isExtra: false,
-      });
+      giveToThem.push(baseItem(myAvailable));
     }
 
     if (theirAvailable > 0 && iNeed) {
-      receiveFromThem.push({
-        stickerId: sticker.id,
-        displayCode: sticker.displayCode,
-        quantity: theirAvailable,
-        playerName: sticker.playerName,
-        teamName: sticker.team?.name,
-        isExtra: false,
-      });
+      receiveFromThem.push(baseItem(theirAvailable));
     }
 
     if (myAvailable > 0 && !theyNeed) {
-      extrasForThem.push({
-        stickerId: sticker.id,
-        displayCode: sticker.displayCode,
-        quantity: myAvailable,
-        playerName: sticker.playerName,
-        teamName: sticker.team?.name,
-        isExtra: true,
-      });
+      extrasForThem.push(extraItem(myAvailable));
     }
 
     if (theirAvailable > 0 && !iNeed) {
-      extrasForMe.push({
-        stickerId: sticker.id,
-        displayCode: sticker.displayCode,
-        quantity: theirAvailable,
-        playerName: sticker.playerName,
-        teamName: sticker.team?.name,
-        isExtra: true,
-      });
+      extrasForMe.push(extraItem(theirAvailable));
     }
   });
 
-  const giveCount = giveToThem.length;
-  const receiveCount = receiveFromThem.length;
-  const imbalance = giveCount - receiveCount;
+  const giveNormal = giveToThem.filter((i) => !i.isSpecial);
+  const giveSpecial = giveToThem.filter((i) => i.isSpecial);
+  const receiveNormal = receiveFromThem.filter((i) => !i.isSpecial);
+  const receiveSpecial = receiveFromThem.filter((i) => i.isSpecial);
+
+  const extrasForMeSpecial = extrasForMe.filter((i) => i.isSpecial);
+  const extrasForThemSpecial = extrasForThem.filter((i) => i.isSpecial);
+
+  const imbalanceNormal = giveNormal.length - receiveNormal.length;
+  const imbalanceSpecial = giveSpecial.length + extrasForThemSpecial.length - (receiveSpecial.length + extrasForMeSpecial.length);
+
+  const finalGiveToThem = [
+    ...giveNormal,
+    ...giveSpecial,
+  ];
+
+  const finalReceiveFromThem = [
+    ...receiveNormal,
+    ...receiveSpecial,
+  ];
+
+  let usedExtrasForMe: TradeItem[] = [];
+  let usedExtrasForThem: TradeItem[] = [];
+
+  if (imbalanceNormal > 0 && extrasForMeSpecial.length > 0) {
+    const needed = Math.min(imbalanceNormal, extrasForMeSpecial.length);
+    usedExtrasForMe = extrasForMeSpecial.slice(0, needed);
+  } else if (imbalanceNormal < 0 && extrasForThemSpecial.length > 0) {
+    const needed = Math.min(Math.abs(imbalanceNormal), extrasForThemSpecial.length);
+    usedExtrasForThem = extrasForThemSpecial.slice(0, needed);
+  }
+
+  if (imbalanceSpecial > 0 && extrasForMeSpecial.length > 0) {
+    const needed = Math.min(imbalanceSpecial, extrasForMeSpecial.length);
+    const newExtras = extrasForMeSpecial.slice(0, needed);
+    const notUsed = new Set(newExtras.map((e) => e.stickerId));
+    usedExtrasForMe = [...usedExtrasForMe, ...newExtras];
+    usedExtrasForThem = usedExtrasForThem.filter((e) => !notUsed.has(e.stickerId));
+  } else if (imbalanceSpecial < 0 && extrasForThemSpecial.length > 0) {
+    const needed = Math.min(Math.abs(imbalanceSpecial), extrasForThemSpecial.length);
+    const newExtras = extrasForThemSpecial.slice(0, needed);
+    const notUsed = new Set(newExtras.map((e) => e.stickerId));
+    usedExtrasForThem = [...usedExtrasForThem, ...newExtras];
+    usedExtrasForMe = usedExtrasForMe.filter((e) => !notUsed.has(e.stickerId));
+  }
 
   return {
-    giveToThem,
-    receiveFromThem,
-    extrasForMe,
-    extrasForThem,
-    imbalance,
+    giveToThem: finalGiveToThem,
+    receiveFromThem: finalReceiveFromThem,
+    extrasForMe: usedExtrasForMe,
+    extrasForThem: usedExtrasForThem,
+    imbalance: finalGiveToThem.length + usedExtrasForThem.length - (finalReceiveFromThem.length + usedExtrasForMe.length),
   };
 }
 
@@ -87,10 +119,20 @@ export function formatTradeText(
   includeExtras: boolean,
   url: string
 ): string {
-  const giveList = suggestion.giveToThem.map((i) => i.displayCode).join(", ") || "nada";
-  const receiveList = suggestion.receiveFromThem.map((i) => i.displayCode).join(", ") || "nada";
+  const giveNormal = suggestion.giveToThem.filter((i) => !i.isSpecial);
+  const giveSpecial = suggestion.giveToThem.filter((i) => i.isSpecial);
+  const receiveNormal = suggestion.receiveFromThem.filter((i) => !i.isSpecial);
+  const receiveSpecial = suggestion.receiveFromThem.filter((i) => i.isSpecial);
 
-  let text = `Minha coleção vs ${username}\n\n🎁 Eu te passo: ${giveList}\n\n📥 Você me passa: ${receiveList}`;
+  const formatList = (items: TradeItem[]) => items.map((i) => i.displayCode).join(", ") || "nada";
+
+  let text = `Minha coleção vs ${username}\n\n🎁 Eu te passo:`;
+  if (giveNormal.length > 0) text += `\nNormais: ${formatList(giveNormal)}`;
+  if (giveSpecial.length > 0) text += `\n⭐ Especiais: ${formatList(giveSpecial)}`;
+
+  text += `\n\n📥 Você me passa:`;
+  if (receiveNormal.length > 0) text += `\nNormais: ${formatList(receiveNormal)}`;
+  if (receiveSpecial.length > 0) text += `\n⭐ Especiais: ${formatList(receiveSpecial)}`;
 
   if (includeExtras) {
     const extrasForThemList = suggestion.extrasForThem
@@ -104,16 +146,11 @@ export function formatTradeText(
 
     if (extrasForThemList || extrasForMeList) {
       text += "\n\n+ Extras para equilibrar:";
-      if (extrasForThemList) {
-        text += `\nVocê pode me dar: ${extrasForThemList}`;
-      }
-      if (extrasForMeList) {
-        text += `\nEu posso te dar: ${extrasForMeList}`;
-      }
+      if (extrasForThemList) text += `\n⭐ Você pode me dar: ${extrasForThemList}`;
+      if (extrasForMeList) text += `\n⭐ Eu posso te dar: ${extrasForMeList}`;
     }
   }
 
   text += `\n\n🔗 Ver: ${url}`;
-
   return text;
 }
