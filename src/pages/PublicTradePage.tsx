@@ -228,7 +228,7 @@ export function PublicTradePage({
         </section>
       )}
 
-      {collection && publicCollection && Object.keys(collection).length > 0 && (
+      {userId && collection && publicCollection && Object.keys(collection).length > 0 && (
         <section className="trade-page__compare">
           {!showComparison ? (
             <button
@@ -248,6 +248,19 @@ export function PublicTradePage({
               onConfirmTrade={userId ? applyTrade : undefined}
             />
           )}
+        </section>
+      )}
+
+      {!userId && collection && publicCollection && Object.keys(collection).length > 0 && (
+        <section className="trade-page__compare">
+          <div className="trade-page__login-prompt">
+            <p>
+              Você tem figurinhas salvas no navegador. Para comparar com esta coleção, faça login ou crie uma conta.
+            </p>
+            <Link to="/" className="trade-page__login-btn">
+              Entrar ou criar conta
+            </Link>
+          </div>
         </section>
       )}
 
