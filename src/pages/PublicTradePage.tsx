@@ -255,7 +255,7 @@ export function PublicTradePage({
         <section className="trade-page__compare">
           <div className="trade-page__login-prompt">
             <p>
-              Você tem figurinhas salvas no navegador. Para comparar com esta coleção, faça login ou crie uma conta.
+              Para fazer uma comparação automática com a sua coleção, faça login ou crie uma conta.
             </p>
             <Link to="/" className="trade-page__login-btn">
               Entrar ou criar conta
