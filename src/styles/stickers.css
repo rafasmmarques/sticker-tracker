@@ -100,6 +100,11 @@
     filter: saturate(1.08);
 }
 
+.sticker-card--hidden {
+    opacity: 0.25;
+    transition: opacity 0.3s ease;
+}
+
 .sticker-card--owned .sticker-card__footer {
     border-color: rgba(23, 115, 69, 0.16);
 }
