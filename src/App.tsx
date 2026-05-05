@@ -207,7 +207,6 @@ function App() {
                 collection={collection}
                 onIncreaseQuantity={increaseStickerQuantity}
                 onDecreaseQuantity={decreaseStickerQuantity}
-                showOnlyMissing={showOnlyMissing}
               />
             ) : (
               <StickerGrid
