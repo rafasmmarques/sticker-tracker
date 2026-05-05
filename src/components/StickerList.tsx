@@ -119,7 +119,6 @@ type StickerListProps = {
   collection: StickerCollection;
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
-  showOnlyMissing?: boolean;
 };
 
 export function StickerList({
@@ -127,13 +126,11 @@ export function StickerList({
   collection,
   onIncreaseQuantity,
   onDecreaseQuantity,
-  showOnlyMissing = false,
 }: StickerListProps) {
   return (
     <section className="sticker-list" aria-label="Lista condensada">
       {stickers.map((sticker) => {
         const quantity = getStickerQuantity(collection, sticker.id);
-        const isHidden = showOnlyMissing && quantity > 0;
         const team = sticker.team;
 
         const fifaCode = team?.fifaCode?.toUpperCase() ?? null;
@@ -145,7 +142,7 @@ export function StickerList({
         return (
           <div
             key={sticker.id}
-            className={`sticker-row ${quantity > 0 ? "sticker-row--owned" : ""} ${isHidden ? "sticker-row--hidden" : ""}`}
+            className={`sticker-row ${quantity > 0 ? "sticker-row--owned" : ""}`}
             style={
               primaryColor || secondaryColor
                 ? {
