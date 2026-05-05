@@ -5,10 +5,12 @@ export function calculateTradeSuggestion(
   theirCollection: StickerCollection,
   stickers: Sticker[]
 ): TradeSuggestion {
-  const giveToThem: TradeItem[] = [];
-  const receiveFromThem: TradeItem[] = [];
-  const extrasForMe: TradeItem[] = [];
-  const extrasForThem: TradeItem[] = [];
+  const giveNormal: TradeItem[] = [];
+  const giveSpecial: TradeItem[] = [];
+  const receiveNormalCandidate: TradeItem[] = [];
+  const receiveSpecialCandidate: TradeItem[] = [];
+  const allExtrasForMe: TradeItem[] = [];
+  const allExtrasForThem: TradeItem[] = [];
 
   stickers.forEach((sticker) => {
     const myQty = myCollection[sticker.id] ?? 0;
@@ -21,95 +23,73 @@ export function calculateTradeSuggestion(
     const iNeed = myQty === 0;
     const isSpecial = sticker.isSpecial || sticker.specialFinish !== null;
 
-    const baseItem = (available: number): TradeItem => ({
+    const createItem = (available: number, isExtra: boolean): TradeItem => ({
       stickerId: sticker.id,
       displayCode: sticker.displayCode,
       quantity: available,
       playerName: sticker.playerName,
       teamName: sticker.team?.name,
       isSpecial,
-      isExtra: false,
-    });
-
-    const extraItem = (available: number): TradeItem => ({
-      stickerId: sticker.id,
-      displayCode: sticker.displayCode,
-      quantity: available,
-      playerName: sticker.playerName,
-      teamName: sticker.team?.name,
-      isSpecial,
-      isExtra: true,
+      isExtra,
     });
 
     if (myAvailable > 0 && theyNeed) {
-      giveToThem.push(baseItem(myAvailable));
+      if (isSpecial) {
+        giveSpecial.push(createItem(myAvailable, false));
+      } else {
+        giveNormal.push(createItem(myAvailable, false));
+      }
     }
 
     if (theirAvailable > 0 && iNeed) {
-      receiveFromThem.push(baseItem(theirAvailable));
+      if (isSpecial) {
+        receiveSpecialCandidate.push(createItem(theirAvailable, false));
+      } else {
+        receiveNormalCandidate.push(createItem(theirAvailable, false));
+      }
     }
 
     if (myAvailable > 0 && !theyNeed) {
-      extrasForThem.push(extraItem(myAvailable));
+      allExtrasForThem.push(createItem(myAvailable, true));
     }
 
     if (theirAvailable > 0 && !iNeed) {
-      extrasForMe.push(extraItem(theirAvailable));
+      allExtrasForMe.push(createItem(theirAvailable, true));
     }
   });
 
-  const giveNormal = giveToThem.filter((i) => !i.isSpecial);
-  const giveSpecial = giveToThem.filter((i) => i.isSpecial);
-  const receiveNormal = receiveFromThem.filter((i) => !i.isSpecial);
-  const receiveSpecial = receiveFromThem.filter((i) => i.isSpecial);
+  const balancedGiveNormal = giveNormal;
+  const balancedGiveSpecial = giveSpecial;
 
-  const extrasForMeSpecial = extrasForMe.filter((i) => i.isSpecial);
-  const extrasForThemSpecial = extrasForThem.filter((i) => i.isSpecial);
+  const balancedReceiveNormal = receiveNormalCandidate.slice(0, balancedGiveNormal.length);
+  const balancedReceiveSpecial = receiveSpecialCandidate.slice(0, balancedGiveSpecial.length);
 
-  const imbalanceNormal = giveNormal.length - receiveNormal.length;
-  const imbalanceSpecial = giveSpecial.length + extrasForThemSpecial.length - (receiveSpecial.length + extrasForMeSpecial.length);
+  const totalGive = balancedGiveNormal.length + balancedGiveSpecial.length;
+  const totalReceive = balancedReceiveNormal.length + balancedReceiveSpecial.length;
+  const imbalance = totalGive - totalReceive;
 
-  const finalGiveToThem = [
-    ...giveNormal,
-    ...giveSpecial,
-  ];
+  const balancedReceive = [...balancedReceiveNormal, ...balancedReceiveSpecial];
 
-  const finalReceiveFromThem = [
-    ...receiveNormal,
-    ...receiveSpecial,
-  ];
+  let extrasForMe: TradeItem[] = [];
+  let extrasForThem: TradeItem[] = [];
 
-  let usedExtrasForMe: TradeItem[] = [];
-  let usedExtrasForThem: TradeItem[] = [];
-
-  if (imbalanceNormal > 0 && extrasForMeSpecial.length > 0) {
-    const needed = Math.min(imbalanceNormal, extrasForMeSpecial.length);
-    usedExtrasForMe = extrasForMeSpecial.slice(0, needed);
-  } else if (imbalanceNormal < 0 && extrasForThemSpecial.length > 0) {
-    const needed = Math.min(Math.abs(imbalanceNormal), extrasForThemSpecial.length);
-    usedExtrasForThem = extrasForThemSpecial.slice(0, needed);
+  if (imbalance > 0) {
+    const needed = Math.min(imbalance, allExtrasForMe.length);
+    extrasForMe = allExtrasForMe.slice(0, needed);
+  } else if (imbalance < 0) {
+    const needed = Math.min(Math.abs(imbalance), allExtrasForThem.length);
+    extrasForThem = allExtrasForThem.slice(0, needed);
   }
 
-  if (imbalanceSpecial > 0 && extrasForMeSpecial.length > 0) {
-    const needed = Math.min(imbalanceSpecial, extrasForMeSpecial.length);
-    const newExtras = extrasForMeSpecial.slice(0, needed);
-    const notUsed = new Set(newExtras.map((e) => e.stickerId));
-    usedExtrasForMe = [...usedExtrasForMe, ...newExtras];
-    usedExtrasForThem = usedExtrasForThem.filter((e) => !notUsed.has(e.stickerId));
-  } else if (imbalanceSpecial < 0 && extrasForThemSpecial.length > 0) {
-    const needed = Math.min(Math.abs(imbalanceSpecial), extrasForThemSpecial.length);
-    const newExtras = extrasForThemSpecial.slice(0, needed);
-    const notUsed = new Set(newExtras.map((e) => e.stickerId));
-    usedExtrasForThem = [...usedExtrasForThem, ...newExtras];
-    usedExtrasForMe = usedExtrasForMe.filter((e) => !notUsed.has(e.stickerId));
-  }
+  const finalGiveToThem = [...balancedGiveNormal, ...balancedGiveSpecial];
+  const finalReceiveFromThem = [...balancedReceive];
 
   return {
     giveToThem: finalGiveToThem,
     receiveFromThem: finalReceiveFromThem,
-    extrasForMe: usedExtrasForMe,
-    extrasForThem: usedExtrasForThem,
-    imbalance: finalGiveToThem.length + usedExtrasForThem.length - (finalReceiveFromThem.length + usedExtrasForMe.length),
+    extrasForMe,
+    extrasForThem,
+    imbalance,
   };
 }
 
