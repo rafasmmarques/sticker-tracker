@@ -14,3 +14,5 @@
 @import './styles/responsive.css';
 @import './styles/trade-page.css';
 @import './styles/trade-comparison.css';
+@import './styles/trade-link-search.css';
+@import './styles/trade-confirm-modal.css';

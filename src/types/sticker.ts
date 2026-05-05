@@ -68,3 +68,20 @@ export type PublicProfile = {
   username: string;
   linkAtivo: boolean;
 };
+
+export type TradeItem = {
+  stickerId: number;
+  displayCode: string;
+  quantity: number;
+  playerName?: string | null;
+  teamName?: string | null;
+  isExtra: boolean;
+};
+
+export type TradeSuggestion = {
+  giveToThem: TradeItem[];
+  receiveFromThem: TradeItem[];
+  extrasForMe: TradeItem[];
+  extrasForThem: TradeItem[];
+  imbalance: number;
+};
