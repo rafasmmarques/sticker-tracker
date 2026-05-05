@@ -228,7 +228,7 @@ export function PublicTradePage({
         </section>
       )}
 
-      {userId && collection && publicCollection && (
+      {collection && publicCollection && Object.keys(collection).length > 0 && (
         <section className="trade-page__compare">
           {!showComparison ? (
             <button
@@ -245,7 +245,7 @@ export function PublicTradePage({
               stickers={stickers}
               username={username!}
               onClose={() => setShowComparison(false)}
-              onConfirmTrade={applyTrade}
+              onConfirmTrade={userId ? applyTrade : undefined}
             />
           )}
         </section>
