@@ -7,6 +7,7 @@ type StickerGridProps = {
   collection: StickerCollection;
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
+  showOnlyMissing?: boolean;
 };
 
 export function StickerGrid({
@@ -14,6 +15,7 @@ export function StickerGrid({
   collection,
   onIncreaseQuantity,
   onDecreaseQuantity,
+  showOnlyMissing = false,
 }: StickerGridProps) {
   return (
     <section
@@ -28,6 +30,7 @@ export function StickerGrid({
           quantity={getStickerQuantity(collection, sticker.id)}
           onIncreaseQuantity={onIncreaseQuantity}
           onDecreaseQuantity={onDecreaseQuantity}
+          isHidden={showOnlyMissing && getStickerQuantity(collection, sticker.id) > 0}
         />
       ))}
     </section>

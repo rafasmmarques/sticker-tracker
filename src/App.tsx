@@ -6,12 +6,14 @@ import { BackToTopButton } from "./components/BackToTopButton";
 import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { StickerGrid } from "./components/StickerGrid";
+import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
 import { useToast } from "./hooks/useToast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
 import { useStickerCollection } from "./hooks/useStickerCollection";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 import {
   calculateCollectionSummary,
   filterStickersByCode,
@@ -24,6 +26,9 @@ function App() {
   const [search, setSearch] = useState("");
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [isCondensedMode, setIsCondensedMode] = useState(isMobile);
+
   const { showToast } = useToast();
   const { user } = useAuth();
   const { stickers } = useStickerCatalog();
@@ -36,9 +41,21 @@ function App() {
     decreaseStickerQuantity,
     markAllStickers,
     clearCollection,
+    importMissingList,
   } = useStickerCollection(user?.id);
 
   const allStickerIds = useMemo(() => stickers.map((s) => s.id), [stickers]);
+  const stickerCodeMap = useMemo(
+    () =>
+      new Map(
+        stickers.map((s) => [s.id, s.displayCode] as [number, string])
+      ),
+    [stickers]
+  );
+
+  const handleImportMissingList = (missingCodes: string[]) => {
+    importMissingList(missingCodes, stickerCodeMap);
+  };
 
   const filteredStickers = useMemo(() => {
     let result = filterStickersByCode(stickers, search);
@@ -178,14 +195,29 @@ function App() {
               onMarkAllStickers={() => markAllStickers(allStickerIds)}
               onClearCollection={clearCollection}
               allStickersCount={allStickerIds.length}
+              isCondensedMode={isCondensedMode}
+              onCondensedModeChange={setIsCondensedMode}
+              onImportList={handleImportMissingList}
+              isMobile={isMobile}
             />
 
-            <StickerGrid
-              stickers={filteredStickers}
-              collection={collection}
-              onIncreaseQuantity={increaseStickerQuantity}
-              onDecreaseQuantity={decreaseStickerQuantity}
-            />
+            {isCondensedMode ? (
+              <StickerList
+                stickers={filteredStickers}
+                collection={collection}
+                onIncreaseQuantity={increaseStickerQuantity}
+                onDecreaseQuantity={decreaseStickerQuantity}
+                showOnlyMissing={showOnlyMissing}
+              />
+            ) : (
+              <StickerGrid
+                stickers={filteredStickers}
+                collection={collection}
+                onIncreaseQuantity={increaseStickerQuantity}
+                onDecreaseQuantity={decreaseStickerQuantity}
+                showOnlyMissing={showOnlyMissing}
+              />
+            )}
 
             <BackToTopButton />
 

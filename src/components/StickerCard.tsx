@@ -117,6 +117,7 @@ type StickerCardProps = {
   quantity: number;
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
+  isHidden?: boolean;
 };
 
 export function StickerCard({
@@ -124,6 +125,7 @@ export function StickerCard({
   quantity,
   onIncreaseQuantity,
   onDecreaseQuantity,
+  isHidden = false,
 }: StickerCardProps) {
   const repeatedQuantity = Math.max(quantity - 1, 0);
   const team = sticker.team;
@@ -140,6 +142,7 @@ export function StickerCard({
         className={[
           "sticker-card",
           quantity > 0 ? "sticker-card--owned" : "",
+          isHidden ? "sticker-card--hidden" : "",
         ].join(" ")}
         style={
           primaryColor || secondaryColor

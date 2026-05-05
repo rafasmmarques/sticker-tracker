@@ -178,6 +178,39 @@ export function useStickerCollection(userId?: string) {
     setCollection({});
   }
 
+  function importMissingList(
+    missingCodes: string[],
+    stickerCodes: Map<number, string>
+  ) {
+    if (missingCodes.length === 0) {
+      setCollection((current) => {
+        const updated = { ...current };
+        stickerCodes.forEach((_, id) => {
+          if (!updated[id]) {
+            updated[id] = 1;
+          }
+        });
+        return updated;
+      });
+      return;
+    }
+
+    const normalizedMissing = new Set(
+      missingCodes.map((c) => c.toUpperCase().replace(/[- ]/g, ""))
+    );
+
+    setCollection((current) => {
+      const updated = { ...current };
+      stickerCodes.forEach((code, id) => {
+        const normalizedCode = code.toUpperCase().replace(/[- ]/g, "");
+        if (!normalizedMissing.has(normalizedCode) && !updated[id]) {
+          updated[id] = 1;
+        }
+      });
+      return updated;
+    });
+  }
+
   async function saveCollection(): Promise<SaveCollectionResult> {
     localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(collection));
 
@@ -216,5 +249,6 @@ export function useStickerCollection(userId?: string) {
     decreaseStickerQuantity,
     markAllStickers,
     clearCollection,
+    importMissingList,
   };
 }

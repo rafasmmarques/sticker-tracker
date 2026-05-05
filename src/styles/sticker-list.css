@@ -1,0 +1,143 @@
+.sticker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sticker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: linear-gradient(
+        135deg,
+        var(--team-primary, #f3f4f6) 0%,
+        var(--team-secondary, #e5e7eb) 100%
+    );
+    min-height: 48px;
+}
+
+.sticker-row--owned {
+    background: linear-gradient(
+        135deg,
+        rgba(23, 115, 69, 0.08) 0%,
+        rgba(23, 115, 69, 0.04) 100%
+    );
+}
+
+.sticker-row--hidden {
+    opacity: 0.25;
+    transition: opacity 0.3s ease;
+}
+
+.sticker-row__qty {
+    min-width: 32px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--color-navy);
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.sticker-row__info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.sticker-row__flag {
+    width: 28px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.sticker-row__code {
+    color: var(--color-ink);
+    font-size: 0.9rem;
+    font-weight: 750;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sticker-row__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sticker-row__btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sticker-row__btn--remove {
+    background: rgba(216, 36, 47, 0.1);
+    color: var(--color-red);
+}
+
+.sticker-row__btn--remove:hover:not(:disabled) {
+    background: var(--color-red);
+    color: #fff;
+}
+
+.sticker-row__btn--remove:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.sticker-row__btn--add {
+    background: rgba(23, 115, 69, 0.1);
+    color: var(--color-green);
+}
+
+.sticker-row__btn--add:hover {
+    background: var(--color-green);
+    color: #fff;
+}
+
+@media (max-width: 400px) {
+    .sticker-row {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .sticker-row__qty {
+        min-width: 26px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
+
+    .sticker-row__flag {
+        width: 24px;
+        height: 18px;
+    }
+
+    .sticker-row__code {
+        font-size: 0.8rem;
+    }
+
+    .sticker-row__btn {
+        width: 28px;
+        height: 28px;
+    }
+}
