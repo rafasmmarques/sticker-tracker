@@ -2,362 +2,177 @@
 
 [![React](https://img.shields.io/badge/React-19.2.5-61DAFB?logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-8.0.10-646CFF?logo=vite)](https://vite.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-%5E6.0.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-2.105.1-3FCF8E?logo=supabase)](https://supabase.com)
-[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)](https://workers.cloudflare.com/)
 
-> Track your sticker collection. Mobile-first. Offline-ready. Cloud sync optional.
+Sticker Tracker e um app mobile-first para acompanhar colecoes de figurinhas. Ele funciona localmente no navegador, permite sincronizacao opcional com Supabase e oferece links publicos para facilitar trocas entre colecionadores.
 
-Sticker Tracker is a mobile-first React app for tracking sticker album collections. It works offline using local storage and optionally syncs to the cloud via Supabase.
+## Principais Recursos
 
-## Quick Start
+- Marcar figurinhas que voce tem, incluindo repetidas.
+- Ver progresso, faltantes, repetidas e percentual da colecao.
+- Buscar por codigo, selecao ou jogador.
+- Filtrar por faltantes, especiais e selecoes.
+- Alternar entre visualizacao compacta em lista e cards.
+- Copiar lista de faltantes para enviar no WhatsApp ou outros apps.
+- Importar uma lista de faltantes para preencher a colecao rapidamente.
+- Salvar primeiro no navegador com `localStorage`.
+- Entrar com e-mail e senha para sincronizar com Supabase.
+- Mesclar colecao local e remota preservando a maior quantidade por figurinha.
+- Criar link publico de trocas em `/trocas/:username`.
+- Comparar colecoes e gerar sugestao de troca.
+- Confirmar uma troca para atualizar a colecao local.
+
+## Stack
+
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Supabase
+- CSS organizado por responsabilidade em `src/styles`
+- Wrangler/Cloudflare Workers para preview e deploy
+
+## Como Rodar
+
+Requisitos:
+
+- Node.js 18 ou superior
+- npm
+- Uma instancia Supabase, caso queira usar catalogo online, login e sincronizacao
+
+Instale as dependencias:
 
 ```bash
-# Install dependencies
 npm install
+```
 
-# Copy environment template
+Crie o arquivo local de ambiente:
+
+```bash
 cp .env.example .env.local
+```
 
-# Configure your Supabase credentials in .env.local
-# VITE_SUPABASE_URL=your_supabase_url
-# VITE_SUPABASE_ANON_KEY=your_anon_key
+Configure as variaveis:
 
-# Start development server
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-chave-anon
+```
+
+Inicie o servidor de desenvolvimento:
+
+```bash
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Abra `http://localhost:5173`.
 
-## Features
+Sem Supabase configurado, o app ainda consegue usar o catalogo fallback em `src/data/stickers.ts` e salvar a colecao no navegador.
 
-- **Mark stickers** you own with a single tap
-- **Track missing stickers** - see what's missing from your collection
-- **Track repeated stickers** - count duplicates
-- **Copy/share missing sticker lists** - export for trading
-- **Offline-first** - works without internet using local storage
-- **Cloud sync** - optional Supabase authentication
-- **Mobile-first design** - optimized for one-handed use
+## Scripts
 
-## Prerequisites
+| Comando | Descricao |
+| --- | --- |
+| `npm run dev` | Inicia o Vite em modo desenvolvimento |
+| `npm run build` | Executa TypeScript e gera o bundle de producao |
+| `npm run lint` | Executa ESLint |
+| `npm run preview` | Gera o build e abre preview com Wrangler |
+| `npm run deploy` | Gera o build e publica com Wrangler |
 
-- Node.js 18+
-- npm 9+
-- [Supabase account](https://supabase.com) (cloud) OR Docker (local)
+## Supabase
 
-## Database Setup
+As migracoes ficam em `supabase/migrations` e o seed inicial em `supabase/seed.sql`.
 
-### Option 1: Supabase Cloud (Recommended)
+Para um projeto Supabase novo:
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to the SQL Editor in your Supabase dashboard
-3. Run the migration file:
+1. Crie o projeto no Supabase.
+2. Rode `supabase/migrations/20260501000000_create_initial_schema.sql`.
+3. Rode `supabase/migrations/20260504000000_add_trade_link.sql`.
+4. Rode `supabase/seed.sql`.
+5. Copie a URL do projeto e a chave anon para `.env.local`.
 
-```bash
-# In supabase/migrations/20260501000000_create_initial_schema.sql
-```
+Tabelas principais:
 
-4. Run the seed file:
+| Tabela | Uso |
+| --- | --- |
+| `profiles` | Perfil do usuario, username e status do link de trocas |
+| `albums` | Metadados do album |
+| `teams` | Selecoes/times, grupo e cores |
+| `sticker_types` | Tipos de figurinhas |
+| `sticker_groups` | Agrupamentos do album |
+| `stickers` | Catalogo normalizado de figurinhas |
+| `user_stickers` | Quantidade de cada figurinha por usuario |
 
-```bash
-# In supabase/seed.sql
-```
+Todas as tabelas usam Row Level Security. O catalogo e publico para leitura. Colecoes so podem ser alteradas pelo proprio usuario. Colecoes publicas para troca sao expostas apenas quando o perfil tem link ativo e username configurado.
 
-5. Go to Project Settings > API
-6. Copy your `Project URL` and `anon public` key
-7. Add them to your `.env.local`:
+## Arquitetura
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### Option 2: Supabase Local (Docker)
-
-```bash
-# Install Supabase CLI
-npm install -g supabase
-
-# Start local Supabase
-npx supabase start
-
-# The local URL will be shown in the output
-# Typically: http://127.0.0.1:54321
-
-# Run migrations
-npx supabase db push
-
-# Run seed
-npx supabase db execute --file=supabase/seed.sql
-
-# Get local credentials
-npx supabase status
-```
-
-Add the local credentials to `.env.local`:
-
-```env
-VITE_SUPABASE_URL=http://127.0.0.1:54321
-VITE_SUPABASE_ANON_KEY=your-local-anon-key
-```
-
-## Database Schema
-
-### Tables
-
-| Table | Description |
-|-------|-------------|
-| `profiles` | User profile linked to `auth.users` |
-| `albums` | Album metadata (slug, name, year, total_stickers) |
-| `teams` | Teams/sections with colors and group info |
-| `sticker_types` | Type classifications (player, team_crest, special, etc.) |
-| `sticker_groups` | Groups per album (Intro, Museum, Team sections) |
-| `stickers` | Sticker catalog (code, number, player info) |
-| `user_stickers` | User quantities (user_id, sticker_id, quantity) |
-
-### Row Level Security (RLS)
-
-All tables have RLS enabled:
-
-- `albums`, `teams`, `sticker_types`, `sticker_groups`, `stickers` - public read
-- `profiles` - owner read/write
-- `user_stickers` - owner full access
-
-## API Reference
-
-### Services
-
-#### authService.ts
-
-```typescript
-// Sign in with email and password
-signInWithEmail(email: string, password: string): Promise<void>
-
-// Sign up new user
-signUpWithEmail(email: string, password: string): Promise<void>
-
-// Sign out current user
-signOut(): Promise<void>
-
-// Ensure user profile exists
-ensureUserProfile(user: User): Promise<void>
-```
-
-#### stickerCatalogService.ts
-
-```typescript
-// Fetch complete sticker catalog from database
-fetchStickerCatalog(): Promise<Sticker[]>
-```
-
-#### stickerCollectionService.ts
-
-```typescript
-// Fetch user's collection from cloud
-fetchUserStickerCollection(userId: string): Promise<StickerCollection>
-
-// Sync collection to cloud (upsert + delete obsolete)
-syncUserStickerCollection(userId: string, collection: StickerCollection): Promise<void>
-```
-
-### Hooks
-
-#### useAuth()
-
-```typescript
-const { user, isAuthLoading, isAuthenticated } = useAuth()
-
-// user: Current user or null
-// isAuthLoading: Loading state during initial session check
-// isAuthenticated: Boolean indicating login status
-```
-
-#### useStickerCatalog()
-
-```typescript
-const { stickers, isLoading, error } = useStickerCatalog()
-
-// stickers: Array of Sticker objects
-// isLoading: Loading state
-// error: Error message if cloud fetch failed
-//
-// Falls back to local data/stickers.ts if offline
-```
-
-#### useStickerCollection(userId?)
-
-```typescript
-const {
-  collection,
-  isSyncing,
-  syncError,
-  saveCollection,
-  increaseStickerQuantity,
-  decreaseStickerQuantity
-} = useStickerCollection(userId)
-
-// collection: StickerCollection (Record<stickerId, quantity>)
-// isSyncing: Sync in progress
-// syncError: Error message if sync failed
-// saveCollection(): Force save to local + cloud
-// increaseStickerQuantity(stickerId): Add +1 to quantity
-// decreaseStickerQuantity(stickerId): Remove -1 (or delete if 1)
-```
-
-### Types
-
-#### Sticker
-
-```typescript
-type Sticker = {
-  id: number;
-  code: string;
-  number: number;
-  albumCode: string;
-  groupCode: string;
-  numberInGroup: number;
-  displayCode: string;
-  playerName?: string | null;
-  playerPosition?: string | null;
-  isSpecial: boolean;
-  specialFinish?: string | null;
-  section?: string | null;
-  pageNumber?: number | null;
-  displayOrder: number;
-  team?: StickerTeam | null;
-  group?: StickerGroup | null;
-  type?: StickerType | null;
-}
-```
-
-#### StickerTeam
-
-```typescript
-type StickerTeam = {
-  id: number;
-  slug: string;
-  name: string;
-  countryCode?: string | null;
-  fifaCode?: string | null;
-  albumCode?: string | null;
-  groupLetter?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
-}
-```
-
-#### StickerGroup
-
-```typescript
-type StickerGroup = {
-  id: number;
-  code: string;
-  name: string;
-  type: 'intro' | 'team';
-  displayOrder: number;
-}
-```
-
-#### StickerType
-
-```typescript
-type StickerType = {
-  id: number;
-  slug: string;
-  name: string;
-  isSpecial: boolean;
-}
-```
-
-#### StickerCollection
-
-```typescript
-// Map of sticker ID to quantity
-type StickerCollection = Record<number, number>
-
-// Example: { 1: 2, 5: 1, 23: 3 }
-// Means: sticker #1 x2, sticker #5 x1, sticker #23 x3
-```
-
-## Project Structure
-
-```
+```txt
 src/
-├── components/         # React UI components
-│   ├── AppHero.tsx
-│   ├── AppNavbar.tsx
-│   ├── BackToTopButton.tsx
-│   ├── BrandMark.tsx
-│   ├── CollectionStats.tsx
-│   ├── CollectionToolbar.tsx
-│   ├── StickerCard.tsx
-│   ├── StickerGrid.tsx
-│   └── ToastProvider.tsx
-│
-├── constants/          # App constants
-│   └── collection.ts
-│
-├── data/               # Fallback data
-│   └── stickers.ts
-│
-├── hooks/              # React hooks
-│   ├── useAuth.ts
-│   ├── useStickerCatalog.ts
-│   ├── useStickerCollection.ts
-│   └── useToast.ts
-│
-├── lib/                # Supabase client
-│   └── supabase.ts
-│
-├── services/           # Business logic
-│   ├── authService.ts
-│   ├── stickerCatalogService.ts
-│   └── stickerCollectionService.ts
-│
-├── styles/             # CSS modules
-│   ├── auth-dropdown.css
-│   ├── back-to-top.css
-│   ├── brand-mark.css
-│   ├── collection-stats.css
-│   ├── collection-toolbar.css
-│   ├── hero.css
-│   ├── layout.css
-│   ├── navbar.css
-│   ├── responsive.css
-│   ├── stickers.css
-│   ├── toast.css
-│   └── tokens.css
-│
-├── types/              # TypeScript types
-│   └── sticker.ts
-│
-├── utils/              # Pure utility functions
-│   └── collection.ts
-│
-├── App.tsx
-├── index.css
-└── main.tsx
-
-supabase/
-├── migrations/          # Database migrations
-│   └── 20260501000000_create_initial_schema.sql
-└── seed.sql            # Initial data seed
+  components/              Componentes de UI
+    trade/                 Componentes de comparacao e confirmacao de trocas
+  constants/               Constantes da aplicacao
+  contexts/                Contextos React
+  data/                    Catalogo fallback local
+  hooks/                   Estado, ciclo de vida e integracoes
+  lib/                     Clientes externos
+  pages/                   Paginas roteadas
+  services/                Supabase e regras de persistencia remota
+  styles/                  CSS por area/responsabilidade
+  types/                   Tipos compartilhados
+  utils/                   Funcoes puras de colecao e troca
 ```
 
-## Available Scripts
+Separacao principal:
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
+- Componentes nao chamam Supabase diretamente.
+- Hooks coordenam estado local, efeitos e sincronizacao.
+- Services concentram acesso ao Supabase.
+- Utils mantem calculos puros, como resumo da colecao e sugestao de troca.
+- `src/index.css` apenas importa os arquivos de estilo.
 
-## Contributing
+## Fluxo Local-First
 
-This project is maintained by the owner. Contributions are not currently accepting pull requests, but feel free to fork and adapt for your own use.
+A colecao sempre e salva em `localStorage`. Quando o usuario entra:
 
-## License
+1. A colecao local e carregada.
+2. A colecao remota e buscada no Supabase.
+3. As duas sao mescladas usando a maior quantidade de cada figurinha.
+4. O resultado mesclado e sincronizado de volta para a nuvem.
 
-MIT License - see [LICENSE](./LICENSE) for details.
+Se a sincronizacao falhar, a colecao local continua preservada e o app mostra feedback por toast.
+
+## Links de Troca
+
+Usuarios autenticados podem configurar um username e ativar um link publico em:
+
+```txt
+/trocas/:username
+```
+
+A pagina publica mostra progresso, faltantes e repetidas da colecao compartilhada. Quando o visitante tambem tem uma colecao carregada, o app pode comparar as duas colecoes e sugerir uma troca com base nas repetidas e faltantes de cada pessoa.
+
+## Deploy
+
+O projeto inclui `wrangler.jsonc` configurado com `not_found_handling: "single-page-application"`, necessario para rotas como `/trocas/:username` funcionarem em producao.
+
+Para publicar:
+
+```bash
+npm run deploy
+```
+
+Para testar o build localmente com Wrangler:
+
+```bash
+npm run preview
+```
+
+## Observacoes
+
+- `.env.local` nao deve ser versionado.
+- Use apenas chaves publicas anon/publishable do Supabase no frontend.
+- O catalogo em `src/data/stickers.ts` e fallback para erro/offline; a fonte principal deve ser a tabela `stickers`.
+- O README nao declara licenca porque nao ha arquivo de licenca no repositorio atualmente.
