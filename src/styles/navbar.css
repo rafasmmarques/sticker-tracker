@@ -41,12 +41,6 @@
     color: #ffffff;
 }
 
-.navbar-button.active {
-    background: var(--color-navy);
-    border-color: var(--color-navy);
-    color: #ffffff;
-}
-
 .navbar-button .icon {
     font-size: 1.25rem;
     line-height: 1;

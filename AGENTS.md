@@ -36,6 +36,7 @@ This is a simple SaaS, but it should not be implemented carelessly.
 - TypeScript
 - Vite
 - Tailwind CSS v4
+- Font Awesome (Free Solid Icons)
 - Supabase
 - Local storage for offline/local-first collection state
 
@@ -226,6 +227,15 @@ Destructive actions such as clearing a collection should not be primary actions 
 The project uses Tailwind CSS v4. Use Tailwind utility classes in components first.
 
 Only create custom CSS when Tailwind cannot achieve the desired effect.
+
+Use Font Awesome for icons (import from `@fortawesome/free-solid-svg-icons`):
+
+```tsx
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilter, faBars, faCopy, faDownload } from "@fortawesome/free-solid-svg-icons";
+
+<FontAwesomeIcon icon={faFilter} />
+```
 
 CSS is split by responsibility in `src/styles`.
 
