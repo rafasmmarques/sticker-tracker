@@ -35,8 +35,8 @@ export function AppNavbar({
   selectedGroup,
   onGroupChange,
   groups,
-  onCopyMissingStickers,
-  onOpenImportDialog,
+  onCopyMissingStickers: onCopyMissingStickersProp,
+  onOpenImportDialog: onOpenImportDialogProp,
   isCondensedMode,
   onCondensedModeChange,
 }: AppNavbarProps) {
@@ -63,7 +63,7 @@ export function AppNavbar({
       const target = event.target as Node;
       const filtersButton = document.querySelector(".navbar-button");
       const hamburgerButton = document.querySelector(".hamburger-button");
-      const filtersDropdown = document.querySelector(".navbar-dropdown--filters");
+      const filtersDropdown = document.querySelector(".filters-dropdown");
       const authDropdown = document.querySelector(".auth-dropdown");
 
       const clickedButton = filtersButton?.contains(target) || hamburgerButton?.contains(target);
@@ -281,7 +281,7 @@ export function AppNavbar({
       </div>
 
       {isFiltersOpen && (
-        <div className="navbar-dropdown navbar-dropdown--filters">
+        <div className="navbar-dropdown filters-dropdown absolute top-full left-0 right-0 z-60 mt-2 p-4 bg-white/98 backdrop-blur-md border-b border-black/8 shadow-xl animate-fade-in">
           <div className="navbar-dropdown__inner">
             <label className="navbar-dropdown__search">
               <span aria-hidden="true">🔍</span>
@@ -294,35 +294,42 @@ export function AppNavbar({
               />
             </label>
 
-            <div className="navbar-dropdown__filters">
-              <label className="checkbox-filtro">
+            <div className="flex flex-wrap items-center justify-between gap-3.5">
+              <label className="flex items-center gap-2 cursor-pointer text-ink text-sm font-semibold select-none">
                 <input
                   type="checkbox"
                   checked={showOnlyMissing}
                   onChange={(e) => onShowOnlyMissingChange(e.target.checked)}
+                  className="w-5 h-5 cursor-pointer accent-navy"
                 />
                 <span>Faltando</span>
               </label>
 
-              <div className="view-toggle">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-ink">Cards</span>
                 <button
                   type="button"
-                  className={`view-toggle__btn ${!isCondensedMode ? "view-toggle__btn--active" : ""}`}
-                  onClick={() => onCondensedModeChange(false)}
+                  className="relative w-11 h-6 rounded-full transition-colors duration-200 bg-navy"
+                  onClick={() => onCondensedModeChange(!isCondensedMode)}
+                  role="switch"
+                  aria-checked={isCondensedMode}
                 >
-                  Cards
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200 ${
+                      isCondensedMode ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
                 </button>
-                <button
-                  type="button"
-                  className={`view-toggle__btn ${isCondensedMode ? "view-toggle__btn--active" : ""}`}
-                  onClick={() => onCondensedModeChange(true)}
-                >
-                  Lista
-                </button>
+                <span className="text-xs font-semibold text-ink">Lista</span>
               </div>
 
               <select
-                className="select-grupo"
+                className="w-full h-12 px-4 rounded-xl border border-black/10 bg-white/88 text-ink text-base font-semibold cursor-pointer appearance-none bg-no-repeat bg-right"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2314213d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                  backgroundPosition: "right 12px center",
+                  paddingRight: "40px"
+                }}
                 value={selectedGroup}
                 onChange={(e) => onGroupChange(e.target.value)}
                 aria-label="Filtrar por seleção"
@@ -341,12 +348,13 @@ export function AppNavbar({
               </select>
             </div>
 
-            <div className="navbar-dropdown__actions">
+            <div className="flex flex-col justify-end gap-4">
+            <div className="flex gap-6">
               <button
                 type="button"
-                className="toolbar-action-btn"
+                className="flex-1 flex items-center justify-center gap-3 h-11 px-6 rounded-full border border-black/10 bg-white/88 text-navy text-base font-bold transition-all duration-200 hover:bg-navy hover:text-white"
                 onClick={() => {
-                  onCopyMissingStickers();
+                  onCopyMissingStickersProp();
                   setIsFiltersOpen(false);
                 }}
               >
@@ -355,15 +363,16 @@ export function AppNavbar({
 
               <button
                 type="button"
-                className="toolbar-action-btn"
+                className="flex-1 flex items-center justify-center gap-3 h-11 px-6 rounded-full border border-black/10 bg-white/88 text-navy text-base font-bold transition-all duration-200 hover:bg-navy hover:text-white"
                 onClick={() => {
-                  onOpenImportDialog();
+                  onOpenImportDialogProp();
                   setIsFiltersOpen(false);
                 }}
               >
                 <span aria-hidden="true">📥</span><span>Importar</span>
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}
