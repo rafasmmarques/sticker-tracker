@@ -27,6 +27,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCondensedMode, setIsCondensedMode] = useState(isMobile);
 
@@ -177,7 +178,20 @@ function App() {
         path="*"
         element={
           <main id="top" className="app-shell">
-            <AppNavbar user={user} />
+            <AppNavbar
+              user={user}
+              search={search}
+              onSearchChange={setSearch}
+              showOnlyMissing={showOnlyMissing}
+              onShowOnlyMissingChange={setShowOnlyMissing}
+              selectedGroup={selectedGroup}
+              onGroupChange={setSelectedGroup}
+              groups={groups}
+              onCopyMissingStickers={copyMissingStickers}
+              onOpenImportDialog={() => setShowImportDialog(true)}
+              isCondensedMode={isCondensedMode}
+              onCondensedModeChange={setIsCondensedMode}
+            />
 
             <AppHero
               onSaveCollection={handleSaveCollection}
@@ -189,21 +203,12 @@ function App() {
             <TradeLinkSearch />
 
             <CollectionToolbar
-              search={search}
-              onSearchChange={setSearch}
-              onCopyMissingStickers={copyMissingStickers}
-              showOnlyMissing={showOnlyMissing}
-              onShowOnlyMissingChange={setShowOnlyMissing}
-              selectedGroup={selectedGroup}
-              onGroupChange={setSelectedGroup}
-              groups={groups}
               onMarkAllStickers={() => markAllStickers(allStickerIds)}
               onClearCollection={clearCollection}
               allStickersCount={allStickerIds.length}
-              isCondensedMode={isCondensedMode}
-              onCondensedModeChange={setIsCondensedMode}
               onImportList={handleImportMissingList}
-              isMobile={isMobile}
+              showImportDialog={showImportDialog}
+              onCloseImportDialog={() => setShowImportDialog(false)}
             />
 
             {isCondensedMode ? (
