@@ -35,8 +35,8 @@ This is a simple SaaS, but it should not be implemented carelessly.
 - React
 - TypeScript
 - Vite
+- Tailwind CSS v4
 - Supabase
-- CSS Modules by responsibility through files in `src/styles`
 - Local storage for offline/local-first collection state
 
 Use `npm` as the package manager unless the repository is explicitly migrated to another tool.
@@ -222,6 +222,10 @@ Do not show a toast every time a sticker quantity changes.
 Destructive actions such as clearing a collection should not be primary actions in the hero.
 
 ## CSS Guidelines
+
+The project uses Tailwind CSS v4. Use Tailwind utility classes in components first.
+
+Only create custom CSS when Tailwind cannot achieve the desired effect.
 
 CSS is split by responsibility in `src/styles`.
 
@@ -423,9 +427,28 @@ When asked to change React logic:
 
 When asked to change CSS:
 
+- ALWAYS prioritize Tailwind utility classes before creating custom CSS;
+- Only create custom CSS when Tailwind cannot achieve the desired effect;
 - update the correct file in `src/styles`;
 - avoid dumping everything into `index.css`;
 - check mobile breakpoints.
+
+Examples of when to use Tailwind (preferred):
+- flexbox: `flex`, `flex-col`, `items-center`, `justify-between`, `gap-4`
+- grid: `grid`, `grid-cols-2`, `gap-4`
+- spacing: `p-4`, `m-2`, `mt-4`, `gap-2`
+- sizing: `w-full`, `h-12`, `min-w-40`
+- colors: `bg-white`, `text-navy`, `border-black/10`
+- typography: `text-sm`, `font-bold`, `text-center`
+- border-radius: `rounded-full`, `rounded-xl`
+- shadows: `shadow-lg`, `shadow-xl`
+- transitions: `transition-all`, `duration-200`
+- responsive: `md:flex`, `lg:grid-cols-3`
+
+Examples of when custom CSS is needed:
+- complex animations keyframes
+- very specific pseudo-elements
+- CSS-only solutions not available in Tailwind
 
 When asked to change database:
 
