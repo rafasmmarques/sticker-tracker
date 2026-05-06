@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { faBars, faGear, faXmark } from "@fortawesome/free-solid-svg-icons";
 import {
   signInWithEmail,
   signOut,
@@ -8,6 +9,12 @@ import {
 import { getProfile, updateTradeLink } from "../services/profileService";
 import { useToast } from "../hooks/useToast";
 import type { GroupOption } from "./CollectionToolbar";
+import {
+  NavbarIconButton,
+  FiltersDropdown,
+  LoggedUserPanel,
+  AnonymousAuthPanel,
+} from "./navbar";
 
 type AppNavbarProps = {
   user: User | null;
@@ -25,6 +32,12 @@ type AppNavbarProps = {
 };
 
 type AuthMode = "login" | "register";
+type OpenDropdown = "filters" | "auth" | null;
+
+const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
+
+const dropdownPanelClass =
+  "absolute left-0 right-0 top-full z-[60] mt-2 rounded-2xl border border-black/10 bg-white/95 p-4 shadow-2xl backdrop-blur-md animate-fade-in";
 
 export function AppNavbar({
   user,
@@ -35,15 +48,14 @@ export function AppNavbar({
   selectedGroup,
   onGroupChange,
   groups,
-  onCopyMissingStickers: onCopyMissingStickersProp,
-  onOpenImportDialog: onOpenImportDialogProp,
+  onCopyMissingStickers,
+  onOpenImportDialog,
   isCondensedMode,
   onCondensedModeChange,
 }: AppNavbarProps) {
   const { showToast } = useToast();
 
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const [mode, setMode] = useState<AuthMode>("login");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -56,40 +68,23 @@ export function AppNavbar({
   const [isLoadingTrade, setIsLoadingTrade] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthOpen && !isFiltersOpen) return;
-
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node;
-      const filtersButton = document.querySelector(".navbar-button");
-      const hamburgerButton = document.querySelector(".hamburger-button");
-      const filtersDropdown = document.querySelector(".filters-dropdown");
-      const authDropdown = document.querySelector(".auth-dropdown");
-
-      const clickedButton = filtersButton?.contains(target) || hamburgerButton?.contains(target);
-      const clickedFilters = filtersDropdown?.contains(target);
-      const clickedAuth = authDropdown?.contains(target);
-
-      if (!clickedButton && !clickedFilters && !clickedAuth) {
-        setIsAuthOpen(false);
-        setIsFiltersOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isAuthOpen, isFiltersOpen]);
+  const isFiltersOpen = openDropdown === "filters";
+  const isAuthOpen = openDropdown === "auth";
 
   useEffect(() => {
     if (!user?.id) {
+      setTradeUsername("");
+      setTradeLinkAtivo(false);
+      setProfileLoaded(false);
       return;
     }
 
-    const userId: string = user.id;
+    const userId = user.id;
     let cancelled = false;
 
     async function loadProfile() {
       try {
+        setProfileLoaded(false);
         const profile = await getProfile(userId);
         if (cancelled) return;
         if (profile) {
@@ -110,14 +105,29 @@ export function AppNavbar({
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user?.id]);
+
+  function toggleDropdown(dropdown: Exclude<OpenDropdown, null>) {
+    setOpenDropdown((currentDropdown) =>
+      currentDropdown === dropdown ? null : dropdown
+    );
+  }
 
   async function handleSaveTradeLink() {
     if (!user) return;
 
     const trimmedUsername = tradeUsername.trim().toLowerCase();
 
-    if (trimmedUsername && !/^[a-z0-9_]{3,20}$/.test(trimmedUsername)) {
+    if (tradeLinkAtivo && !trimmedUsername) {
+      showToast({
+        title: "Informe um nome para o link.",
+        description: "Esse nome será usado no seu link de trocas.",
+        variant: "error",
+      });
+      return;
+    }
+
+    if (trimmedUsername && !USERNAME_REGEX.test(trimmedUsername)) {
       showToast({
         title: "Nome inválido.",
         description: "Use 3-20 letras, números ou underscore.",
@@ -129,7 +139,7 @@ export function AppNavbar({
     try {
       setIsLoadingTrade(true);
       await updateTradeLink(user.id, trimmedUsername || null, tradeLinkAtivo);
-
+      setTradeUsername(trimmedUsername);
       showToast({
         title: "Link salvo.",
         description: tradeLinkAtivo
@@ -140,8 +150,7 @@ export function AppNavbar({
     } catch (error) {
       showToast({
         title: "Erro ao salvar.",
-        description:
-          error instanceof Error ? error.message : "Tente novamente.",
+        description: error instanceof Error ? error.message : "Tente novamente.",
         variant: "error",
       });
     } finally {
@@ -165,24 +174,18 @@ export function AppNavbar({
   async function submitLogin() {
     try {
       setIsSubmitting(true);
-
       await signInWithEmail(loginEmail, loginPassword);
-
       showToast({
         title: "Login realizado com sucesso.",
         description: "Sua coleção será sincronizada automaticamente.",
         variant: "success",
       });
-
       setLoginPassword("");
-      setIsAuthOpen(false);
+      setOpenDropdown(null);
     } catch (error) {
       showToast({
         title: "Não foi possível entrar.",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Tente novamente em instantes.",
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
         variant: "error",
       });
     } finally {
@@ -193,25 +196,18 @@ export function AppNavbar({
   async function submitRegister() {
     try {
       setIsSubmitting(true);
-
       await signUpWithEmail(registerEmail, registerPassword);
-
       showToast({
         title: "Conta criada.",
-        description:
-          "Confirme seu e-mail para entrar. Confira também a caixa de spam.",
+        description: "Confirme seu e-mail para entrar. Veja a caixa de spam.",
         variant: "success",
       });
-
       setRegisterPassword("");
       setMode("login");
     } catch (error) {
       showToast({
         title: "Não foi possível criar a conta.",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Tente novamente em instantes.",
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
         variant: "error",
       });
     } finally {
@@ -222,23 +218,17 @@ export function AppNavbar({
   async function handleLogout() {
     try {
       setIsSubmitting(true);
-
       await signOut();
-
       showToast({
         title: "Você saiu da conta.",
         description: "Sua coleção continua salva neste navegador.",
         variant: "info",
       });
-
-      setIsAuthOpen(false);
+      setOpenDropdown(null);
     } catch (error) {
       showToast({
         title: "Não foi possível sair.",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Tente novamente em instantes.",
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
         variant: "error",
       });
     } finally {
@@ -247,362 +237,94 @@ export function AppNavbar({
   }
 
   return (
-    <nav className="app-navbar" aria-label="Menu principal">
-      <div className="app-navbar__left">
+    <>
+      {openDropdown && (
         <button
-          className={`navbar-button ${isFiltersOpen ? "active" : ""}`}
           type="button"
-          aria-label={isFiltersOpen ? "Fechar filtros" : "Abrir filtros"}
-          aria-expanded={isFiltersOpen}
-          onClick={() => {
-            if (isAuthOpen) setIsAuthOpen(false);
-            setIsFiltersOpen((prev) => !prev);
-          }}
-        >
-          {isFiltersOpen ? <span>✕</span> : <><span className="icon" aria-hidden="true">⚙</span><span>Filtros</span></>}
-        </button>
-      </div>
+          className="fixed inset-0 z-40 cursor-default bg-transparent"
+          aria-label="Fechar menu"
+          onClick={() => setOpenDropdown(null)}
+        />
+      )}
 
-      <div className="app-navbar__right">
-        <button
-          className="hamburger-button"
-          type="button"
-          aria-label={isAuthOpen ? "Fechar menu" : "Abrir menu"}
-          aria-expanded={isAuthOpen}
-          onClick={() => {
-            if (isFiltersOpen) setIsFiltersOpen(false);
-            setIsAuthOpen((prev) => !prev);
-          }}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
+      <nav
+        className="sticky top-0 z-50 mb-2 flex w-full items-start justify-between gap-2 rounded-2xl bg-white/95 p-2 shadow-lg backdrop-blur-md"
+        aria-label="Menu principal"
+      >
+        <NavbarIconButton
+          isActive={isFiltersOpen}
+          activeLabel="Fechar filtros"
+          inactiveLabel="Abrir filtros"
+          icon={isFiltersOpen ? faXmark : faGear}
+          onClick={() => toggleDropdown("filters")}
+        />
 
-      {isFiltersOpen && (
-        <div className="navbar-dropdown filters-dropdown absolute top-full left-0 right-0 z-60 mt-2 p-4 bg-white/98 backdrop-blur-md border-b border-black/8 shadow-xl animate-fade-in">
-          <div className="navbar-dropdown__inner">
-            <label className="navbar-dropdown__search">
-              <span aria-hidden="true">🔍</span>
-              <input
-                type="search"
-                placeholder="Buscar figurinha..."
-                value={search}
-                onChange={(event) => onSearchChange(event.target.value)}
-                aria-label="Buscar por código, seleção ou jogador"
+        <NavbarIconButton
+          isActive={isAuthOpen}
+          activeLabel="Fechar menu"
+          inactiveLabel="Abrir menu"
+          icon={isAuthOpen ? faXmark : faBars}
+          onClick={() => toggleDropdown("auth")}
+        />
+
+        {isFiltersOpen && (
+          <FiltersDropdown
+            search={search}
+            onSearchChange={onSearchChange}
+            showOnlyMissing={showOnlyMissing}
+            onShowOnlyMissingChange={onShowOnlyMissingChange}
+            selectedGroup={selectedGroup}
+            onGroupChange={onGroupChange}
+            groups={groups}
+            onCopyMissingStickers={() => {
+              onCopyMissingStickers();
+              setOpenDropdown(null);
+            }}
+            onOpenImportDialog={() => {
+              onOpenImportDialog();
+              setOpenDropdown(null);
+            }}
+            isCondensedMode={isCondensedMode}
+            onCondensedModeChange={onCondensedModeChange}
+          />
+        )}
+
+        {isAuthOpen && (
+          <div className={dropdownPanelClass}>
+            {user ? (
+              <LoggedUserPanel
+                user={user}
+                profileLoaded={profileLoaded}
+                tradeUsername={tradeUsername}
+                tradeLinkAtivo={tradeLinkAtivo}
+                isLoadingTrade={isLoadingTrade}
+                isSubmitting={isSubmitting}
+                onTradeUsernameChange={setTradeUsername}
+                onTradeLinkAtivoChange={setTradeLinkAtivo}
+                onSaveTradeLink={handleSaveTradeLink}
+                onCopyTradeLink={handleCopyTradeLink}
+                onLogout={handleLogout}
               />
-            </label>
-
-            <div className="flex flex-wrap items-center justify-between gap-3.5">
-              <label className="flex items-center gap-2 cursor-pointer text-ink text-sm font-semibold select-none">
-                <input
-                  type="checkbox"
-                  checked={showOnlyMissing}
-                  onChange={(e) => onShowOnlyMissingChange(e.target.checked)}
-                  className="w-5 h-5 cursor-pointer accent-navy"
-                />
-                <span>Faltando</span>
-              </label>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-ink">Cards</span>
-                <button
-                  type="button"
-                  className="relative w-11 h-6 rounded-full transition-colors duration-200 bg-navy"
-                  onClick={() => onCondensedModeChange(!isCondensedMode)}
-                  role="switch"
-                  aria-checked={isCondensedMode}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200 ${
-                      isCondensedMode ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-                <span className="text-xs font-semibold text-ink">Lista</span>
-              </div>
-
-              <select
-                className="w-full h-12 px-4 rounded-xl border border-black/10 bg-white/88 text-ink text-base font-semibold cursor-pointer appearance-none bg-no-repeat bg-right"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2314213d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                  backgroundPosition: "right 12px center",
-                  paddingRight: "40px"
-                }}
-                value={selectedGroup}
-                onChange={(e) => onGroupChange(e.target.value)}
-                aria-label="Filtrar por seleção"
-              >
-                <option value="">Seleção</option>
-                <option value="specials">Especiais</option>
-                {groups.map((group) => (
-                  <optgroup key={group.letter} label={`Grupo ${group.letter}`}>
-                    {group.teams.map((team) => (
-                      <option key={team.fifaCode} value={team.fifaCode}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col justify-end gap-4">
-            <div className="flex gap-6">
-              <button
-                type="button"
-                className="flex-1 flex items-center justify-center gap-3 h-11 px-6 rounded-full border border-black/10 bg-white/88 text-navy text-base font-bold transition-all duration-200 hover:bg-navy hover:text-white"
-                onClick={() => {
-                  onCopyMissingStickersProp();
-                  setIsFiltersOpen(false);
-                }}
-              >
-                <span aria-hidden="true">📋</span><span>Copiar</span>
-              </button>
-
-              <button
-                type="button"
-                className="flex-1 flex items-center justify-center gap-3 h-11 px-6 rounded-full border border-black/10 bg-white/88 text-navy text-base font-bold transition-all duration-200 hover:bg-navy hover:text-white"
-                onClick={() => {
-                  onOpenImportDialogProp();
-                  setIsFiltersOpen(false);
-                }}
-              >
-                <span aria-hidden="true">📥</span><span>Importar</span>
-              </button>
-            </div>
+            ) : (
+              <AnonymousAuthPanel
+                mode={mode}
+                loginEmail={loginEmail}
+                loginPassword={loginPassword}
+                registerEmail={registerEmail}
+                registerPassword={registerPassword}
+                isSubmitting={isSubmitting}
+                onModeChange={setMode}
+                onLoginEmailChange={setLoginEmail}
+                onLoginPasswordChange={setLoginPassword}
+                onRegisterEmailChange={setRegisterEmail}
+                onRegisterPasswordChange={setRegisterPassword}
+                onLoginSubmit={submitLogin}
+                onRegisterSubmit={submitRegister}
+              />
+            )}
           </div>
-          </div>
-        </div>
-      )}
-
-      {isAuthOpen && (
-        <div className="auth-dropdown">
-          {user ? (
-            <div className="auth-dropdown__content">
-              <strong>Conta conectada</strong>
-
-              <p className="auth-dropdown__hint">
-                Sua coleção pode ser salva na nuvem e acessada em outros
-                dispositivos.
-              </p>
-
-              {profileLoaded && (
-                <div className="trade-link-section">
-                  <label className="trade-link-section__label">
-                    Link de trocas
-                  </label>
-
-                  <div className="trade-link-section__input-row">
-                    <span className="trade-link-section__prefix">
-                      /trocas/
-                    </span>
-                    <input
-                      type="text"
-                      className="trade-link-section__input"
-                      placeholder="seu-nome"
-                      value={tradeUsername}
-                      onChange={(e) =>
-                        setTradeUsername(e.target.value.replace(/\s/g, ""))
-                      }
-                      maxLength={20}
-                    />
-                  </div>
-
-                  <label className="trade-link-section__checkbox">
-                    <input
-                      type="checkbox"
-                      checked={tradeLinkAtivo}
-                      onChange={(e) => setTradeLinkAtivo(e.target.checked)}
-                    />
-                    <span>Ativar link de trocas</span>
-                  </label>
-
-                  <div className="trade-link-section__actions">
-                    <button
-                      type="button"
-                      className="trade-link-section__save"
-                      onClick={handleSaveTradeLink}
-                      disabled={isLoadingTrade}
-                    >
-                      {isLoadingTrade ? "Salvando..." : "Salvar"}
-                    </button>
-
-                    {tradeLinkAtivo && tradeUsername && (
-                      <button
-                        type="button"
-                        className="trade-link-section__copy"
-                        onClick={handleCopyTradeLink}
-                      >
-                        Copiar link
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <button
-                className="auth-dropdown__primary-action"
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleLogout}
-              >
-                Sair
-              </button>
-            </div>
-          ) : (
-            <div className="auth-dropdown__content">
-              <div
-                className={[
-                  "auth-mode-toggle",
-                  mode === "register" ? "auth-mode-toggle--register" : "",
-                ].join(" ")}
-              >
-                <button
-                  type="button"
-                  aria-pressed={mode === "login"}
-                  onClick={() => setMode("login")}
-                >
-                  Entrar
-                </button>
-
-                <button
-                  type="button"
-                  aria-pressed={mode === "register"}
-                  onClick={() => setMode("register")}
-                >
-                  Criar conta
-                </button>
-              </div>
-
-              <div
-                className={[
-                  "auth-slider",
-                  mode === "register" ? "auth-slider--register" : "",
-                ].join(" ")}
-              >
-                <div className="auth-slider__track">
-                  <section
-                    className="auth-pane"
-                    aria-hidden={mode !== "login"}
-                  >
-                    <div className="auth-pane__inner">
-                      <div className="auth-pane__title">
-                        <strong>Entrar na conta</strong>
-                        <span>
-                          Acesse sua coleção salva e continue de onde parou.
-                        </span>
-                      </div>
-
-                      <form
-                        className="auth-dropdown__form"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          void submitLogin();
-                        }}
-                      >
-                        <input
-                          type="email"
-                          placeholder="Seu e-mail"
-                          value={loginEmail}
-                          autoComplete="email"
-                          required
-                          tabIndex={mode === "login" ? 0 : -1}
-                          onChange={(event) =>
-                            setLoginEmail(event.target.value)
-                          }
-                        />
-
-                        <input
-                          type="password"
-                          placeholder="Sua senha"
-                          value={loginPassword}
-                          autoComplete="current-password"
-                          minLength={6}
-                          required
-                          tabIndex={mode === "login" ? 0 : -1}
-                          onChange={(event) =>
-                            setLoginPassword(event.target.value)
-                          }
-                        />
-
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          tabIndex={mode === "login" ? 0 : -1}
-                        >
-                          Entrar
-                        </button>
-                      </form>
-                    </div>
-                  </section>
-
-                  <section
-                    className="auth-pane"
-                    aria-hidden={mode !== "register"}
-                  >
-                    <div className="auth-pane__inner">
-                      <div className="auth-pane__title">
-                        <strong>Criar conta</strong>
-                        <span>
-                          Salve sua coleção na nuvem para usar em qualquer
-                          dispositivo.
-                        </span>
-                      </div>
-
-                      <form
-                        className="auth-dropdown__form"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          void submitRegister();
-                        }}
-                      >
-                        <input
-                          type="email"
-                          placeholder="Seu e-mail"
-                          value={registerEmail}
-                          autoComplete="email"
-                          required
-                          tabIndex={mode === "register" ? 0 : -1}
-                          onChange={(event) =>
-                            setRegisterEmail(event.target.value)
-                          }
-                        />
-
-                        <input
-                          type="password"
-                          placeholder="Crie uma senha"
-                          value={registerPassword}
-                          autoComplete="new-password"
-                          minLength={6}
-                          required
-                          tabIndex={mode === "register" ? 0 : -1}
-                          onChange={(event) =>
-                            setRegisterPassword(event.target.value)
-                          }
-                        />
-
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          tabIndex={mode === "register" ? 0 : -1}
-                        >
-                          Criar conta
-                        </button>
-                      </form>
-                    </div>
-                  </section>
-                </div>
-              </div>
-
-              <p className="auth-dropdown__hint">
-                Cadastre-se para salvar sua coleção e continuar de onde parou.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-    </nav>
+        )}
+      </nav>
+    </>
   );
 }
