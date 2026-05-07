@@ -62,7 +62,7 @@
 }
 
 .sticker-row__code {
-    color: var(--color-ink);
+    color: var(--team-text, var(--color-ink));
     font-size: 0.9rem;
     font-weight: 750;
     white-space: nowrap;

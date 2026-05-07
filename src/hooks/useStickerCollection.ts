@@ -211,6 +211,26 @@ export function useStickerCollection(userId?: string) {
     });
   }
 
+  function importRepeatedList(
+    repeatedCodes: string[],
+    stickerCodes: Map<number, string>
+  ) {
+    const normalizedRepeated = new Set(
+      repeatedCodes.map((c) => c.toUpperCase().replace(/[- ]/g, ""))
+    );
+
+    setCollection((current) => {
+      const updated = { ...current };
+      stickerCodes.forEach((code, id) => {
+        const normalizedCode = code.toUpperCase().replace(/[- ]/g, "");
+        if (normalizedRepeated.has(normalizedCode)) {
+          updated[id] = (updated[id] ?? 0) + 1;
+        }
+      });
+      return updated;
+    });
+  }
+
   async function saveCollection(): Promise<SaveCollectionResult> {
     localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(collection));
 
@@ -272,6 +292,7 @@ export function useStickerCollection(userId?: string) {
     markAllStickers,
     clearCollection,
     importMissingList,
+    importRepeatedList,
     applyTrade,
   };
 }

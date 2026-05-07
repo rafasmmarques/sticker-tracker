@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { AuthModeToggle } from "./AuthModeToggle";
 import { AuthPane } from "./AuthPane";
 
@@ -34,8 +37,11 @@ export function AnonymousAuthPanel({
   onLoginSubmit,
   onRegisterSubmit,
 }: AnonymousAuthPanelProps) {
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+
   const inputClass =
-    "h-12 w-full rounded-full border border-black/10 bg-white px-4 text-sm font-semibold text-[var(--color-ink)] outline-none transition focus:border-[var(--color-navy)] focus:ring-4 focus:ring-[rgba(23,27,95,0.12)]";
+    "h-12 w-full rounded-full border border-black/10 bg-white px-4 pr-12 text-sm font-semibold text-[var(--color-ink)] outline-none transition focus:border-[var(--color-navy)] focus:ring-4 focus:ring-[rgba(23,27,95,0.12)]";
 
   const primaryButtonClass =
     "inline-flex h-11 w-full items-center justify-center rounded-full bg-[var(--color-navy)] px-5 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
@@ -73,17 +79,28 @@ export function AnonymousAuthPanel({
                 tabIndex={mode === "login" ? 0 : -1}
                 onChange={(event) => onLoginEmailChange(event.target.value)}
               />
-              <input
-                type="password"
-                className={inputClass}
-                placeholder="Sua senha"
-                value={loginPassword}
-                autoComplete="current-password"
-                minLength={6}
-                required
-                tabIndex={mode === "login" ? 0 : -1}
-                onChange={(event) => onLoginPasswordChange(event.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  className={inputClass}
+                  placeholder="Sua senha"
+                  value={loginPassword}
+                  autoComplete="current-password"
+                  minLength={6}
+                  required
+                  tabIndex={mode === "login" ? 0 : -1}
+                  onChange={(event) => onLoginPasswordChange(event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[var(--color-navy)]"
+                  tabIndex={mode === "login" ? 0 : -1}
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  <FontAwesomeIcon icon={showLoginPassword ? faEyeSlash : faEye} />
+                </button>
+              </div>
               <button type="submit" className={primaryButtonClass} disabled={isSubmitting} tabIndex={mode === "login" ? 0 : -1}>
                 Entrar
               </button>
@@ -112,17 +129,28 @@ export function AnonymousAuthPanel({
                 tabIndex={mode === "register" ? 0 : -1}
                 onChange={(event) => onRegisterEmailChange(event.target.value)}
               />
-              <input
-                type="password"
-                className={inputClass}
-                placeholder="Crie uma senha"
-                value={registerPassword}
-                autoComplete="new-password"
-                minLength={6}
-                required
-                tabIndex={mode === "register" ? 0 : -1}
-                onChange={(event) => onRegisterPasswordChange(event.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showRegisterPassword ? "text" : "password"}
+                  className={inputClass}
+                  placeholder="Crie uma senha"
+                  value={registerPassword}
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                  tabIndex={mode === "register" ? 0 : -1}
+                  onChange={(event) => onRegisterPasswordChange(event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[var(--color-navy)]"
+                  tabIndex={mode === "register" ? 0 : -1}
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  aria-label={showRegisterPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  <FontAwesomeIcon icon={showRegisterPassword ? faEyeSlash : faEye} />
+                </button>
+              </div>
               <button type="submit" className={primaryButtonClass} disabled={isSubmitting} tabIndex={mode === "register" ? 0 : -1}>
                 Criar conta
               </button>

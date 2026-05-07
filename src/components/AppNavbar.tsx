@@ -27,6 +27,7 @@ type AppNavbarProps = {
   groups: GroupOption[];
   onCopyMissingStickers: () => void;
   onOpenImportDialog: () => void;
+  onClearCollection: () => void;
   isCondensedMode: boolean;
   onCondensedModeChange: (condensed: boolean) => void;
 };
@@ -50,6 +51,7 @@ export function AppNavbar({
   groups,
   onCopyMissingStickers,
   onOpenImportDialog,
+  onClearCollection,
   isCondensedMode,
   onCondensedModeChange,
 }: AppNavbarProps) {
@@ -304,6 +306,7 @@ export function AppNavbar({
                 onSaveTradeLink={handleSaveTradeLink}
                 onCopyTradeLink={handleCopyTradeLink}
                 onLogout={handleLogout}
+                onClearCollection={onClearCollection}
               />
             ) : (
               <AnonymousAuthPanel
