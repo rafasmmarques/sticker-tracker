@@ -29,6 +29,7 @@ function App() {
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCondensedMode, setIsCondensedMode] = useState(isMobile);
 
@@ -215,6 +216,7 @@ function App() {
             <AppHero
               onSaveCollection={handleSaveCollection}
               isSavingCollection={isSyncing}
+              onOpenMarkAllDialog={() => setShowMarkAllDialog(true)}
             />
 
             <CollectionStats summary={summary} />
@@ -223,12 +225,13 @@ function App() {
 
             <CollectionToolbar
               onMarkAllStickers={() => markAllStickers(allStickerIds)}
-              onClearCollection={clearCollection}
               allStickersCount={allStickerIds.length}
               onImportMissingList={handleImportMissingList}
               onImportRepeatedList={handleImportRepeatedList}
               showImportDialog={showImportDialog}
               onCloseImportDialog={() => setShowImportDialog(false)}
+              showMarkAllDialog={showMarkAllDialog}
+              onShowMarkAllDialogChange={setShowMarkAllDialog}
               showToast={showToast}
             />
 

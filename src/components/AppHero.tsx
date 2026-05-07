@@ -1,11 +1,13 @@
 type AppHeroProps = {
   onSaveCollection: () => Promise<void>;
   isSavingCollection: boolean;
+  onOpenMarkAllDialog?: () => void;
 };
 
 export function AppHero({
   onSaveCollection,
   isSavingCollection,
+  onOpenMarkAllDialog,
 }: AppHeroProps) {
   return (
     <section className="app-hero">
@@ -20,9 +22,13 @@ export function AppHero({
         </p>
 
         <div className="app-hero__actions">
-          <a className="primary-link" href="#collection-grid">
-            Ver coleção
-          </a>
+          <button
+            className="primary-link"
+            type="button"
+            onClick={onOpenMarkAllDialog}
+          >
+            Marcar Todas
+          </button>
 
           <button
             className="ghost-button"
