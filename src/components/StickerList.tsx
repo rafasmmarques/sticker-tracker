@@ -2,6 +2,21 @@ import type { CSSProperties } from "react";
 import type { Sticker, StickerCollection } from "../types/sticker";
 import { getStickerQuantity } from "../utils/collection";
 
+function getContrastColor(hexColor: string | null): string {
+  if (!hexColor) return "var(--color-ink)";
+
+  const hex = hexColor.replace("#", "");
+  if (hex.length !== 6) return "var(--color-ink)";
+
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance > 0.5 ? "var(--color-ink)" : "#ffffff";
+}
+
 const FIFA_TO_ISO: Record<string, string> = {
   BRA: "br",
   GER: "de",
@@ -148,6 +163,7 @@ export function StickerList({
                 ? {
                     "--team-primary": primaryColor,
                     "--team-secondary": secondaryColor,
+                    "--team-text": getContrastColor(primaryColor),
                   } as CSSProperties
                 : undefined
             }

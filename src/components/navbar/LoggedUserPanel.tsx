@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 type LoggedUserPanelProps = {
@@ -12,6 +13,7 @@ type LoggedUserPanelProps = {
   onSaveTradeLink: () => void;
   onCopyTradeLink: () => void;
   onLogout: () => void;
+  onClearCollection: () => void;
 };
 
 export function LoggedUserPanel({
@@ -26,12 +28,21 @@ export function LoggedUserPanel({
   onSaveTradeLink,
   onCopyTradeLink,
   onLogout,
+  onClearCollection,
 }: LoggedUserPanelProps) {
+  const [showResetDialog, setShowResetDialog] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: _userId, email: _userEmail } = _user;
+
   const primaryButtonClass =
     "inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-navy)] px-5 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
 
   const secondaryButtonClass =
     "inline-flex h-11 items-center justify-center rounded-full border border-black/10 bg-white px-5 text-sm font-bold text-[var(--color-navy)] transition hover:bg-[var(--color-navy)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60";
+
+  const dangerButtonClass =
+    "inline-flex h-11 w-full items-center justify-center rounded-full border-2 border-red-600 px-5 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <div className="grid gap-4">
@@ -84,6 +95,40 @@ export function LoggedUserPanel({
         </div>
       )}
 
+      {showResetDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowResetDialog(false)}>
+          <div className="mx-4 w-full max-w-xs rounded-2xl bg-white p-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-2 text-lg font-black text-[var(--color-ink)]">Zerar coleção?</h3>
+            <p className="mb-4 text-sm text-slate-500">
+              Tem certeza que deseja <strong>apagar todos as figurinhas</strong> da sua coleção?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="grid gap-2">
+              <button
+                type="button"
+                className="h-10 w-full rounded-full bg-red-600 text-sm font-bold text-white transition hover:bg-red-700"
+                onClick={() => {
+                  onClearCollection();
+                  setShowResetDialog(false);
+                }}
+              >
+                Sim, zerar tudo
+              </button>
+              <button
+                type="button"
+                className="h-10 w-full rounded-full border border-slate-200 text-sm font-bold text-slate-600 transition hover:bg-slate-100"
+                onClick={() => setShowResetDialog(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button type="button" className={dangerButtonClass} onClick={() => setShowResetDialog(true)}>
+        Zerar Coleção
+      </button>
       <button type="button" className={secondaryButtonClass} disabled={isSubmitting} onClick={onLogout}>
         Sair
       </button>

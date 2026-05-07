@@ -44,6 +44,7 @@ function App() {
     markAllStickers,
     clearCollection,
     importMissingList,
+    importRepeatedList,
     applyTrade,
   } = useStickerCollection(user?.id);
 
@@ -58,6 +59,10 @@ function App() {
 
   const handleImportMissingList = (missingCodes: string[]) => {
     importMissingList(missingCodes, stickerCodeMap);
+  };
+
+  const handleImportRepeatedList = (repeatedCodes: string[]) => {
+    importRepeatedList(repeatedCodes, stickerCodeMap);
   };
 
   const filteredStickers = useMemo(() => {
@@ -189,6 +194,7 @@ function App() {
               groups={groups}
               onCopyMissingStickers={copyMissingStickers}
               onOpenImportDialog={() => setShowImportDialog(true)}
+              onClearCollection={clearCollection}
               isCondensedMode={isCondensedMode}
               onCondensedModeChange={setIsCondensedMode}
             />
@@ -206,7 +212,8 @@ function App() {
               onMarkAllStickers={() => markAllStickers(allStickerIds)}
               onClearCollection={clearCollection}
               allStickersCount={allStickerIds.length}
-              onImportList={handleImportMissingList}
+              onImportMissingList={handleImportMissingList}
+              onImportRepeatedList={handleImportRepeatedList}
               showImportDialog={showImportDialog}
               onCloseImportDialog={() => setShowImportDialog(false)}
             />
