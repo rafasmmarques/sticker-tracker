@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { getPublicProfileByUsername } from "../../services/profileService";
 import { showToast } from "../../utils/toast";
-import "../../styles/trade-link-search.css";
 
 export function TradeLinkSearch() {
   const [username, setUsername] = useState("");
@@ -61,24 +60,28 @@ export function TradeLinkSearch() {
   }
 
   return (
-    <div className="trade-link-search">
-      <label className="trade-link-search__label">
+    <div className="flex flex-col gap-2 p-4 bg-white rounded-2xl shadow-sm">
+      <label className="text-sm font-bold text-[var(--color-ink)]">
         Comparar com outra coleção
       </label>
-      <div className="trade-link-search__input-group">
-        <span className="trade-link-search__prefix">/trocas/</span>
-        <input
-          type="text"
-          className="trade-link-search__input"
-          placeholder="nome-do-amigo"
-          value={username}
-          onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
-          onKeyDown={handleKeyDown}
-          maxLength={24}
-        />
+      <div className="flex flex-col sm:flex-row items-stretch">
+        <div className="flex items-center">
+          <span className="px-3 py-2.5 bg-[var(--color-border)] rounded-l-full border border-r-0 border-[var(--color-border)] text-sm text-[var(--color-muted)] whitespace-nowrap">
+            /trocas/
+          </span>
+          <input
+            type="text"
+            className="flex-1 min-h-[42px] px-1 border-y border-[var(--color-border)] outline-none text-sm text-[var(--color-ink)]"
+            placeholder="nome-do-amigo"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
+            onKeyDown={handleKeyDown}
+            maxLength={24}
+          />
+        </div>
         <button
           type="button"
-          className="trade-link-search__btn"
+          className="mt-2 sm:mt-0 sm:px-4 min-h-[42px] bg-[var(--color-navy)] text-white rounded-b-xl sm:rounded-r-full sm:rounded-l-none text-sm font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSearch}
           disabled={isSearching || username.trim().length < 3}
         >

@@ -136,22 +136,29 @@ export function StickerCard({
   const primaryColor = team?.primaryColor ?? null;
   const secondaryColor = team?.secondaryColor ?? null;
 
+  const isIntroSticker = sticker.groupCode === "FWC";
+  
+  const cardStyle = isIntroSticker
+    ? {
+        background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
+        borderColor: "rgba(180, 180, 180, 0.4)",
+      } as React.CSSProperties
+    : primaryColor || secondaryColor
+      ? {
+          "--team-primary": primaryColor,
+          "--team-secondary": secondaryColor,
+        } as React.CSSProperties
+      : undefined;
+
   return (
-    <article className="sticker-item">
+    <article className="flex flex-col gap-2.5">
       <div
         className={[
           "sticker-card",
           quantity > 0 ? "sticker-card--owned" : "",
           isHidden ? "sticker-card--hidden" : "",
         ].join(" ")}
-        style={
-          primaryColor || secondaryColor
-            ? {
-                "--team-primary": primaryColor,
-                "--team-secondary": secondaryColor,
-              } as React.CSSProperties
-            : undefined
-        }
+        style={cardStyle}
       >
         <span className="sticker-card__number">{sticker.displayCode}</span>
 
@@ -177,31 +184,31 @@ export function StickerCard({
         </div>
       </div>
 
-      <div className="sticker-card__actions">
+      <div className="flex items-center justify-center gap-2">
         <button
-          className="quantity-button quantity-button--remove"
+          className="inline-flex w-9 h-9 border rounded-full bg-white/60 text-lg font-bold leading-none text-red-600/80 hover:bg-red-500 hover:text-white transition disabled:opacity-30 disabled:transform-none md:w-[42px] md:h-[42px]"
           type="button"
           aria-label={`Remover figurinha ${sticker.displayCode}`}
           disabled={quantity === 0}
           onClick={() => onDecreaseQuantity(sticker.id)}
         >
-          −
+          <span className="flex items-center justify-center w-full h-full">−</span>
         </button>
 
         <div
-          className="quantity-indicator"
+          className="inline-flex min-w-9 h-7 items-center justify-center border rounded-full px-2.5 text-sm font-bold text-[var(--color-navy)] bg-white/70"
           aria-label={`Quantidade da figurinha ${sticker.displayCode}`}
         >
           {quantity}
         </div>
 
         <button
-          className="quantity-button quantity-button--add"
+          className="inline-flex w-9 h-9 border rounded-full bg-white/60 text-lg font-bold leading-none text-green-600/80 hover:bg-green-500 hover:text-white transition md:w-[42px] md:h-[42px]"
           type="button"
           aria-label={`Adicionar figurinha ${sticker.displayCode}`}
           onClick={() => onIncreaseQuantity(sticker.id)}
         >
-          +
+          <span className="flex items-center justify-center w-full h-full">+</span>
         </button>
       </div>
     </article>

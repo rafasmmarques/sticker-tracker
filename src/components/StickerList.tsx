@@ -143,7 +143,7 @@ export function StickerList({
   onDecreaseQuantity,
 }: StickerListProps) {
   return (
-    <section className="sticker-list" aria-label="Lista condensada">
+    <section className="flex flex-col gap-0.5" aria-label="Lista condensada">
       {stickers.map((sticker) => {
         const quantity = getStickerQuantity(collection, sticker.id);
         const team = sticker.team;
@@ -154,52 +154,64 @@ export function StickerList({
         const primaryColor = team?.primaryColor ?? null;
         const secondaryColor = team?.secondaryColor ?? null;
 
+        const rowClasses = quantity > 0
+          ? "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12"
+          : "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12";
+
+        let bgStyle: CSSProperties | undefined;
+        
+        if (sticker.groupCode === "FWC") {
+          bgStyle = {
+            background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
+          } as CSSProperties;
+        } else if (primaryColor || secondaryColor) {
+          bgStyle = {
+            "--team-primary": primaryColor,
+            "--team-secondary": secondaryColor,
+            "--team-text": getContrastColor(primaryColor),
+            background: primaryColor 
+              ? `linear-gradient(135deg, ${primaryColor}20 0%, ${secondaryColor}30 100%)`
+              : undefined,
+          } as CSSProperties;
+        }
+
         return (
           <div
             key={sticker.id}
-            className={`sticker-row ${quantity > 0 ? "sticker-row--owned" : ""}`}
-            style={
-              primaryColor || secondaryColor
-                ? {
-                    "--team-primary": primaryColor,
-                    "--team-secondary": secondaryColor,
-                    "--team-text": getContrastColor(primaryColor),
-                  } as CSSProperties
-                : undefined
-            }
+            className={rowClasses}
+            style={bgStyle}
           >
-            <div className="sticker-row__qty">{quantity}</div>
+            <div className="min-w-8 h-7 flex items-center justify-center rounded-md bg-white/70 text-sm font-extrabold text-[var(--color-navy)]">{quantity}</div>
 
-            <div className="sticker-row__info">
+            <div className="flex-1 flex items-center gap-2 min-w-0">
               {flagCode && (
                 <img
                   src={`https://flagcdn.com/w80/${flagCode}.png`}
                   alt={team?.name ?? ""}
-                  className="sticker-row__flag"
+                  className="w-7 h-5 object-contain rounded-sm flex-shrink-0"
                   loading="lazy"
                 />
               )}
-              <span className="sticker-row__code">{sticker.displayCode}</span>
+              <span className="text-sm font-bold text-[var(--color-ink)]">{sticker.displayCode}</span>
             </div>
 
-            <div className="sticker-row__actions">
+            <div className="grid grid-rows-2 gap-0.5 h-full">
               <button
                 type="button"
-                className="sticker-row__btn sticker-row__btn--remove"
+                className="w-8 h-full rounded-t-md text-lg font-bold flex items-center justify-center bg-white text-green-600 hover:bg-green-500 hover:text-white transition"
+                aria-label={`Adicionar ${sticker.displayCode}`}
+                onClick={() => onIncreaseQuantity(sticker.id)}
+              >
+                +
+              </button>
+              <button
+                type="button"
+                className="w-8 h-full rounded-b-md text-lg font-bold flex items-center justify-center bg-white text-red-600 hover:bg-red-500 hover:text-white transition disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label={`Remover ${sticker.displayCode}`}
                 disabled={quantity === 0}
                 onClick={() => onDecreaseQuantity(sticker.id)}
               >
                 −
-              </button>
-
-              <button
-                type="button"
-                className="sticker-row__btn sticker-row__btn--add"
-                aria-label={`Adicionar ${sticker.displayCode}`}
-                onClick={() => onIncreaseQuantity(sticker.id)}
-              >
-                +
               </button>
             </div>
           </div>
