@@ -73,31 +73,31 @@ export function CollectionToolbar({
   };
 
   return (
-    <section className="collection-toolbar" aria-label="Toolbar da coleção">
+    <section className="flex flex-col sm:flex-row items-end sm:justify-between gap-4 sm:gap-6 mb-4 sm:mb-6 py-2" aria-label="Toolbar da coleção">
       <div className="collection-toolbar__header">
         <span className="section-kicker">Minha coleção</span>
         <h2>Marque suas figurinhas</h2>
       </div>
 
       {showMarkAllDialog && (
-        <div className="dialog-overlay" onClick={handleCancelDialog}>
-          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Marcar todas as figurinhas?</h3>
-            <p>
+        <div className="fixed inset-0 bg-[#141d3d]/60 flex items-center justify-center z-50 p-4" onClick={handleCancelDialog}>
+          <div className="bg-white rounded-2xl p-4 sm:p-6 max-w-[400px] w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--color-ink)] mb-3">Marcar todas as figurinhas?</h3>
+            <p className="text-sm sm:text-base text-[var(--color-ink)] mb-5">
               Tem certeza que deseja marcar todas as figurinhas? Isso vai
               marcar <strong>{allStickersCount}</strong> figurinhas como tenho.
             </p>
-            <div className="dialog-actions">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               <button
                 type="button"
-                className="btn-cancelar"
+                className="flex-1 min-w-[100px] min-h-[44px] rounded-lg text-sm font-bold bg-gray-500 text-white border-none cursor-pointer hover:opacity-90"
                 onClick={handleCancelDialog}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="btn-confirmar"
+                className="flex-1 min-w-[100px] min-h-[44px] rounded-lg text-sm font-bold bg-green-700 text-white border-none cursor-pointer hover:opacity-90"
                 onClick={handleConfirmMarkAll}
               >
                 Marcar Todas
@@ -108,9 +108,9 @@ export function CollectionToolbar({
       )}
 
       {showImportDialog && (
-        <div className="dialog-overlay" onClick={handleCancelImport}>
-          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Importar figurinhas</h3>
+        <div className="fixed inset-0 bg-[#141d3d]/60 flex items-center justify-center z-50 p-4" onClick={handleCancelImport}>
+          <div className="bg-white rounded-2xl p-4 sm:p-6 max-w-[400px] w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--color-ink)] mb-3">Importar figurinhas</h3>
             <div className="flex gap-2 mb-3">
               <button
                 type="button"
@@ -135,29 +135,29 @@ export function CollectionToolbar({
                 Repetidas
               </button>
             </div>
-            <p>
+            <p className="text-sm text-[var(--color-ink)] mb-3">
               {importMode === "missing"
                 ? `Cole aqui a lista de códigos das figurinhas que faltam, separadas por vírgula. (Se vazio, marca todas como tenho)`
                 : `Cole aqui a lista de códigos das figurinhas repetidas, separadas por vírgula. (Isso aumenta +1 em cada figurinha)`}
             </p>
             <textarea
-              className="import-textarea"
+              className="w-full min-h-[100px] p-3 border border-[var(--color-border)] rounded-xl resize-y text-sm font-normal"
               placeholder={importMode === "missing" ? "Ex: GER 5, BRA 10, ARG 3" : "Ex: GER 5, BRA 10, ARG 3"}
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               rows={4}
             />
-            <div className="dialog-actions">
+            <div className="flex flex-wrap gap-3 mt-4">
               <button
                 type="button"
-                className="btn-cancelar"
+                className="flex-1 min-w-[100px] min-h-[44px] rounded-lg text-sm font-bold bg-gray-500 text-white border-none cursor-pointer hover:opacity-90"
                 onClick={handleCancelImport}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="btn-confirmar"
+                className="flex-1 min-w-[100px] min-h-[44px] rounded-lg text-sm font-bold bg-green-700 text-white border-none cursor-pointer hover:opacity-90"
                 onClick={handleImportSubmit}
               >
                 Importar
