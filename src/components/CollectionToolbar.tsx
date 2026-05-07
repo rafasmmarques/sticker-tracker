@@ -13,41 +13,42 @@ type ShowToast = (toast: {
 
 type CollectionToolbarProps = {
   onMarkAllStickers?: () => void;
-  onClearCollection?: () => void;
   allStickersCount?: number;
   onImportMissingList?: (missingCodes: string[]) => void;
   onImportRepeatedList?: (repeatedCodes: string[]) => void;
   showImportDialog?: boolean;
   onCloseImportDialog?: () => void;
+  showMarkAllDialog?: boolean;
+  onShowMarkAllDialogChange?: (show: boolean) => void;
   showToast?: ShowToast;
 };
 
 export function CollectionToolbar({
   onMarkAllStickers,
-  onClearCollection,
   allStickersCount = 0,
   onImportMissingList,
   onImportRepeatedList,
   showImportDialog = false,
   onCloseImportDialog,
+  showMarkAllDialog = false,
+  onShowMarkAllDialogChange,
   showToast,
 }: CollectionToolbarProps) {
-  const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
   const [importText, setImportText] = useState("");
   const [importMode, setImportMode] = useState<"missing" | "repeated">("missing");
 
   const handleConfirmMarkAll = () => {
     onMarkAllStickers?.();
-    setShowMarkAllDialog(false);
-  };
-
-  const handleClearCollection = () => {
-    onClearCollection?.();
-    setShowMarkAllDialog(false);
+    onShowMarkAllDialogChange?.(false);
+    showToast?.({
+      title: "Coleção marcada",
+      description: `Todas as ${allStickersCount} figurinhas foram marcadas como tenho.`,
+      variant: "success",
+    });
   };
 
   const handleCancelDialog = () => {
-    setShowMarkAllDialog(false);
+    onShowMarkAllDialogChange?.(false);
   };
 
   const handleImportSubmit = () => {
@@ -93,13 +94,6 @@ export function CollectionToolbar({
                 onClick={handleCancelDialog}
               >
                 Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-zerar"
-                onClick={handleClearCollection}
-              >
-                Zerar Tudo
               </button>
               <button
                 type="button"
