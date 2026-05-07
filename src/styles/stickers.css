@@ -1,7 +1,8 @@
 .stickers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
+    grid-template-columns: repeat(5, 180px);
     gap: 26px 20px;
+    justify-content: center;
 }
 
 .sticker-item {
