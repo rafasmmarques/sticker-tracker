@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { getPublicProfileByUsername } from "../../services/profileService";
-import { useToast } from "../../hooks/useToast";
+import { showToast } from "../../utils/toast";
 import "../../styles/trade-link-search.css";
 
 export function TradeLinkSearch() {
-  const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 

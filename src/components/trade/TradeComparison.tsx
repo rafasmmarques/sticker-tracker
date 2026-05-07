@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Sticker, StickerCollection, TradeItem } from "../../types/sticker";
 import { calculateTradeSuggestion, formatTradeText } from "../../utils/trade";
-import { useToast } from "../../hooks/useToast";
+import { showToast } from "../../utils/toast";
 import { TradeConfirmModal } from "./TradeConfirmModal";
 import "../../styles/trade-comparison.css";
 
@@ -57,8 +57,7 @@ export function TradeComparison({
   onClose,
   onConfirmTrade,
 }: TradeComparisonProps) {
-  const { showToast } = useToast();
-  const [showExtras, setShowExtras] = useState(false);
+	const [showExtras, setShowExtras] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const suggestion = useMemo(() => {
@@ -115,6 +114,11 @@ export function TradeComparison({
     onConfirmTrade(giveIds, receiveIds);
     setShowConfirmModal(false);
     onClose();
+    showToast({
+      title: "Troca registrada!",
+      description: "Sua coleção foi atualizada.",
+      variant: "success",
+    });
   }
 
   const totalGive =

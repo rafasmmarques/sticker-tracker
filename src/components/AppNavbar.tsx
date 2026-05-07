@@ -7,7 +7,7 @@ import {
   signUpWithEmail,
 } from "../services/authService";
 import { getProfile, updateTradeLink } from "../services/profileService";
-import { useToast } from "../hooks/useToast";
+import { showToast } from "../utils/toast";
 import type { GroupOption } from "./CollectionToolbar";
 import {
   NavbarIconButton,
@@ -25,7 +25,7 @@ type AppNavbarProps = {
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   groups: GroupOption[];
-  onCopyMissingStickers: () => void;
+  onExportList: (type: "missing" | "repeated") => void;
   onOpenImportDialog: () => void;
   onClearCollection: () => void;
   isCondensedMode: boolean;
@@ -49,14 +49,12 @@ export function AppNavbar({
   selectedGroup,
   onGroupChange,
   groups,
-  onCopyMissingStickers,
+  onExportList,
   onOpenImportDialog,
   onClearCollection,
   isCondensedMode,
   onCondensedModeChange,
 }: AppNavbarProps) {
-  const { showToast } = useToast();
-
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const [mode, setMode] = useState<AuthMode>("login");
   const [loginEmail, setLoginEmail] = useState("");
@@ -200,8 +198,8 @@ export function AppNavbar({
       setIsSubmitting(true);
       await signUpWithEmail(registerEmail, registerPassword);
       showToast({
-        title: "Conta criada.",
-        description: "Confirme seu e-mail para entrar. Veja a caixa de spam.",
+        title: "Conta criada!",
+        description: "Um link de confirmação foi enviado para seu e-mail. Verifique também a caixa de spam.",
         variant: "success",
       });
       setRegisterPassword("");
@@ -278,8 +276,8 @@ export function AppNavbar({
             selectedGroup={selectedGroup}
             onGroupChange={onGroupChange}
             groups={groups}
-            onCopyMissingStickers={() => {
-              onCopyMissingStickers();
+            onExportList={(type) => {
+              onExportList(type);
               setOpenDropdown(null);
             }}
             onOpenImportDialog={() => {
