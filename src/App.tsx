@@ -10,7 +10,7 @@ import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
 import { TradeLinkSearch } from "./components/trade/TradeLinkSearch";
-import { useToast } from "./hooks/useToast";
+import { showToast } from "./utils/toast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
 import { useStickerCollection } from "./hooks/useStickerCollection";
@@ -20,6 +20,7 @@ import {
   filterStickersByCode,
   getStickersWithoutQuantity,
   filterStickersMissing,
+  getRepeatedStickers,
 } from "./utils/collection";
 import "./index.css";
 
@@ -31,7 +32,6 @@ function App() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCondensedMode, setIsCondensedMode] = useState(isMobile);
 
-  const { showToast } = useToast();
   const { user } = useAuth();
   const { stickers } = useStickerCatalog();
 
@@ -95,6 +95,10 @@ function App() {
     return getStickersWithoutQuantity(stickers, collection);
   }, [stickers, collection]);
 
+  const repeatedStickers = useMemo(() => {
+    return getRepeatedStickers(stickers, collection);
+  }, [stickers, collection]);
+
   const groups = useMemo(() => {
     const groupMap = new Map<string, { fifaCode: string; name: string }[]>();
 
@@ -149,19 +153,28 @@ function App() {
     }
   }
 
-  async function copyMissingStickers() {
-    const missingList = missingStickers
-      .map((sticker) => sticker.displayCode)
-      .join(", ");
+  async function copyToClipboard(type: "missing" | "repeated") {
+    const targetList = type === "missing" ? missingStickers : repeatedStickers;
+    const codeList = targetList.map((sticker) => sticker.displayCode).join(", ");
 
-    const text = missingList
-      ? `Figurinhas que faltam na minha coleção: ${missingList}`
-      : "Completei minha coleção!";
+    const prefix =
+      type === "missing"
+        ? "Figurinhas que faltam na minha coleção:"
+        : "Figurinhas repetidas na minha coleção:";
+
+    const text = codeList
+      ? `${prefix} ${codeList}`
+      : type === "missing"
+      ? "Completei minha coleção!"
+      : "Não tenho figurinhas repetidas.";
 
     await navigator.clipboard.writeText(text);
 
     showToast({
-      title: "Lista copiada.",
+      title:
+        type === "missing"
+          ? "Lista de faltantes copiada."
+          : "Lista de repetidas copiada.",
       description: "Agora é só colar no WhatsApp ou mandar para seus amigos.",
       variant: "success",
     });
@@ -192,7 +205,7 @@ function App() {
               selectedGroup={selectedGroup}
               onGroupChange={setSelectedGroup}
               groups={groups}
-              onCopyMissingStickers={copyMissingStickers}
+              onExportList={copyToClipboard}
               onOpenImportDialog={() => setShowImportDialog(true)}
               onClearCollection={clearCollection}
               isCondensedMode={isCondensedMode}
@@ -216,6 +229,7 @@ function App() {
               onImportRepeatedList={handleImportRepeatedList}
               showImportDialog={showImportDialog}
               onCloseImportDialog={() => setShowImportDialog(false)}
+              showToast={showToast}
             />
 
             {isCondensedMode ? (

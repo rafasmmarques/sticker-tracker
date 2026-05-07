@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import type { GroupOption } from "./CollectionToolbar";
 
+type ExportListType = "missing" | "repeated";
+
 type AppToolbarProps = {
   search: string;
   onSearchChange: (search: string) => void;
@@ -9,7 +11,7 @@ type AppToolbarProps = {
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   groups: GroupOption[];
-  onCopyMissingStickers: () => void;
+  onExportList: (type: ExportListType) => void;
   onOpenImportDialog: () => void;
   isCondensedMode: boolean;
   onCondensedModeChange: (condensed: boolean) => void;
@@ -23,13 +25,20 @@ export function AppToolbar({
   selectedGroup,
   onGroupChange,
   groups,
-  onCopyMissingStickers,
+  onExportList,
   onOpenImportDialog,
   isCondensedMode,
   onCondensedModeChange,
 }: AppToolbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportType, setExportType] = useState<ExportListType>("missing");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleExport = () => {
+    onExportList(exportType);
+    setShowExportDialog(false);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -124,12 +133,12 @@ export function AppToolbar({
                 type="button"
                 className="toolbar-action-btn"
                 onClick={() => {
-                  onCopyMissingStickers();
+                  setShowExportDialog(true);
                   setIsMenuOpen(false);
                 }}
               >
                 <span aria-hidden="true">📋</span>
-                <span>Copiar Lista de Faltantes</span>
+                <span>Exportar Lista</span>
               </button>
 
               <button
@@ -142,6 +151,45 @@ export function AppToolbar({
               >
                 <span aria-hidden="true">📥</span>
                 <span>Importar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExportDialog && (
+        <div className="dialog-overlay" onClick={() => setShowExportDialog(false)}>
+          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Exportar lista</h3>
+            
+            <label className="dialog-radio-option">
+              <input
+                type="radio"
+                name="exportType"
+                value="missing"
+                checked={exportType === "missing"}
+                onChange={() => setExportType("missing")}
+              />
+              <span>Lista das que faltam</span>
+            </label>
+
+            <label className="dialog-radio-option">
+              <input
+                type="radio"
+                name="exportType"
+                value="repeated"
+                checked={exportType === "repeated"}
+                onChange={() => setExportType("repeated")}
+              />
+              <span>Lista de repetidas</span>
+            </label>
+
+            <div className="dialog-actions">
+              <button type="button" className="btn-cancelar" onClick={() => setShowExportDialog(false)}>
+                Cancelar
+              </button>
+              <button type="button" className="btn-primario" onClick={handleExport}>
+                Exportar
               </button>
             </div>
           </div>

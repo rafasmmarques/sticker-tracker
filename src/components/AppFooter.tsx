@@ -1,4 +1,4 @@
-import { useToast } from "../hooks/useToast";
+import { showToast } from "../utils/toast";
 
 type AppFooterProps = {
   developerName?: string;
@@ -6,7 +6,6 @@ type AppFooterProps = {
 };
 
 export function AppFooter({ developerName, pixKey }: AppFooterProps) {
-  const { showToast } = useToast();
 
   async function handleCopyPix() {
     if (!pixKey) return;

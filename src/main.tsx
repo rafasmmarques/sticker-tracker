@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
-import { ToastProvider } from './components/ToastProvider';
+import { Toaster } from 'sonner';
 import './index.css';
 
 function renderFatalError(error: unknown) {
@@ -95,9 +95,20 @@ async function bootstrap() {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
         <BrowserRouter>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <Toaster
+            position="bottom-right"
+            duration={4200}
+            style={{
+              background: 'rgba(255, 255, 255, 0.96)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(20, 33, 61, 0.1)',
+              borderLeft: '5px solid var(--color-blue)',
+              borderRadius: '18px',
+              padding: '14px 16px',
+              boxShadow: '0 18px 48px rgba(20, 33, 61, 0.2)',
+            }}
+          />
+          <App />
         </BrowserRouter>
       </StrictMode>
     );

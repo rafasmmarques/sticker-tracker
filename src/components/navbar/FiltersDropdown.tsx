@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faCopy, faDownload, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import type { GroupOption } from "../CollectionToolbar";
+
+type ExportListType = "missing" | "repeated";
 
 type FiltersDropdownProps = {
   search: string;
@@ -10,7 +13,7 @@ type FiltersDropdownProps = {
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   groups: GroupOption[];
-  onCopyMissingStickers: () => void;
+  onExportList: (type: ExportListType) => void;
   onOpenImportDialog: () => void;
   isCondensedMode: boolean;
   onCondensedModeChange: (condensed: boolean) => void;
@@ -24,11 +27,19 @@ export function FiltersDropdown({
   selectedGroup,
   onGroupChange,
   groups,
-  onCopyMissingStickers,
+  onExportList,
   onOpenImportDialog,
   isCondensedMode,
   onCondensedModeChange,
 }: FiltersDropdownProps) {
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportType, setExportType] = useState<ExportListType>("missing");
+
+  const handleExport = () => {
+    onExportList(exportType);
+    setShowExportDialog(false);
+  };
+
   const dropdownPanelClass =
     "absolute left-0 right-0 top-full z-[60] mt-2 rounded-2xl border border-black/10 bg-white/95 p-4 shadow-2xl backdrop-blur-md animate-fade-in";
 
@@ -104,9 +115,9 @@ export function FiltersDropdown({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <button type="button" className={secondaryButtonClass} onClick={onCopyMissingStickers}>
+          <button type="button" className={secondaryButtonClass} onClick={() => setShowExportDialog(true)}>
             <FontAwesomeIcon icon={faCopy} />
-            <span className="ml-2">Copiar</span>
+            <span className="ml-2">Exportar</span>
           </button>
           <button type="button" className={secondaryButtonClass} onClick={onOpenImportDialog}>
             <FontAwesomeIcon icon={faDownload} />
@@ -114,6 +125,47 @@ export function FiltersDropdown({
           </button>
         </div>
       </div>
+
+      {showExportDialog && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={() => setShowExportDialog(false)}>
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-black/10 bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-4 text-lg font-bold text-[var(--color-ink)]">Exportar lista</h3>
+            
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 p-3 transition hover:bg-slate-50">
+              <input
+                type="radio"
+                name="exportType"
+                value="missing"
+                checked={exportType === "missing"}
+                onChange={() => setExportType("missing")}
+                className="accent-[var(--color-navy)]"
+              />
+              <span className="text-sm font-semibold text-[var(--color-ink)]">Lista das que faltam</span>
+            </label>
+
+            <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 p-3 transition hover:bg-slate-50">
+              <input
+                type="radio"
+                name="exportType"
+                value="repeated"
+                checked={exportType === "repeated"}
+                onChange={() => setExportType("repeated")}
+                className="accent-[var(--color-navy)]"
+              />
+              <span className="text-sm font-semibold text-[var(--color-ink)]">Lista de repetidas</span>
+            </label>
+
+            <div className="mt-5 flex gap-3">
+              <button type="button" className="flex-1 rounded-full border border-black/10 py-3 text-sm font-bold text-[var(--color-ink)]" onClick={() => setShowExportDialog(false)}>
+                Cancelar
+              </button>
+              <button type="button" className="flex-1 rounded-full bg-[var(--color-navy)] py-3 text-sm font-bold text-white" onClick={handleExport}>
+                Exportar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

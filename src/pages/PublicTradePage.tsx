@@ -12,7 +12,7 @@ import {
   getRepeatedStickers,
 } from "../utils/collection";
 import { TradeComparison } from "../components/trade/TradeComparison";
-import { useToast } from "../hooks/useToast";
+import { showToast } from "../utils/toast";
 import "../styles/trade-page.css";
 
 type PublicTradePageProps = {
@@ -30,7 +30,6 @@ export function PublicTradePage({
   const [searchParams] = useSearchParams();
   const username = params.username ?? "";
   const shouldCompare = searchParams.get("comparar") === "1";
-  const { showToast } = useToast();
   const { stickers } = useStickerCatalog();
 
   const [publicCollection, setPublicCollection] =
@@ -149,6 +148,11 @@ export function PublicTradePage({
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank"
     );
+    showToast({
+      title: "Abriu o WhatsApp.",
+      description: "Cole a lista e envie!",
+      variant: "info",
+    });
   }
 
   if (isLoading) {

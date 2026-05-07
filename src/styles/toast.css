@@ -1,45 +1,7 @@
-.toast-viewport {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 100;
-    display: grid;
-    width: min(380px, calc(100vw - 32px));
-    gap: 10px;
+.sonner-success {
+  border-left: 5px solid var(--color-green) !important;
 }
 
-.toast {
-    display: grid;
-    gap: 4px;
-    border: 1px solid rgba(20, 33, 61, 0.1);
-    border-left: 5px solid var(--color-blue);
-    border-radius: 18px;
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 18px 48px rgba(20, 33, 61, 0.2);
-    backdrop-filter: blur(18px);
-}
-
-.toast strong {
-    color: var(--color-ink);
-    font-size: 0.95rem;
-    font-weight: 950;
-}
-
-.toast span {
-    color: var(--color-muted);
-    font-size: 0.86rem;
-    line-height: 1.45;
-}
-
-.toast--success {
-    border-left-color: var(--color-green);
-}
-
-.toast--error {
-    border-left-color: var(--color-red);
-}
-
-.toast--info {
-    border-left-color: var(--color-blue);
+.sonner-error {
+  border-left: 5px solid var(--color-red) !important;
 }

@@ -5,6 +5,12 @@ export type GroupOption = {
   teams: { fifaCode: string; name: string }[];
 };
 
+type ShowToast = (toast: {
+  title: string;
+  description?: string;
+  variant?: "success" | "error" | "info";
+}) => void;
+
 type CollectionToolbarProps = {
   onMarkAllStickers?: () => void;
   onClearCollection?: () => void;
@@ -13,6 +19,7 @@ type CollectionToolbarProps = {
   onImportRepeatedList?: (repeatedCodes: string[]) => void;
   showImportDialog?: boolean;
   onCloseImportDialog?: () => void;
+  showToast?: ShowToast;
 };
 
 export function CollectionToolbar({
@@ -23,6 +30,7 @@ export function CollectionToolbar({
   onImportRepeatedList,
   showImportDialog = false,
   onCloseImportDialog,
+  showToast,
 }: CollectionToolbarProps) {
   const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
   const [importText, setImportText] = useState("");
@@ -51,6 +59,11 @@ export function CollectionToolbar({
     }
     onCloseImportDialog?.();
     setImportText("");
+    showToast?.({
+      title: "Figurinhas importadas.",
+      description: `${codes.length} código(s) adicionado(s).`,
+      variant: "success",
+    });
   };
 
   const handleCancelImport = () => {

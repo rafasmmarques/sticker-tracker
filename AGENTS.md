@@ -38,6 +38,7 @@ This is a simple SaaS, but it should not be implemented carelessly.
 - Tailwind CSS v4
 - Font Awesome (Free Solid Icons)
 - Supabase
+- Sonner (toast notifications)
 - Local storage for offline/local-first collection state
 
 Use `npm` as the package manager unless the repository is explicitly migrated to another tool.
@@ -97,7 +98,6 @@ src/
     CollectionToolbar.tsx
     StickerCard.tsx
     StickerGrid.tsx
-    ToastProvider.tsx
 
   constants/
     collection.ts
@@ -137,6 +137,7 @@ src/
 
   utils/
     collection.ts
+    toast.tsx
 
   App.tsx
   index.css
@@ -271,6 +272,26 @@ Respect accessibility preferences:
 Animations should clarify state changes, not distract.
 
 For login/register transitions, prefer clear directional animations using `transform` and `transition`.
+
+## Toast Guidelines
+
+The app uses [Sonner](https://sonner.emilkowal.ski) for toast notifications.
+
+Import the `showToast` utility from `src/utils/toast.tsx`:
+
+```tsx
+import { showToast } from "./utils/toast";
+
+showToast({
+  title: "Mensagem de sucesso",
+  description: "Descrição opcional",
+  variant: "success", // "success" | "error" | "info"
+});
+```
+
+The Toaster component is already configured in `main.tsx`.
+
+Do not use toasts for every sticker quantity change - reserve them for meaningful user actions.
 
 ## Supabase Guidelines
 
