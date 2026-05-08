@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import type { Sticker, StickerCollection } from "../types/sticker";
 import { getStickerQuantity } from "../utils/collection";
@@ -134,6 +135,7 @@ type StickerListProps = {
   collection: StickerCollection;
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
+  showOnlyMissing?: boolean;
 };
 
 export function StickerList({
@@ -141,82 +143,125 @@ export function StickerList({
   collection,
   onIncreaseQuantity,
   onDecreaseQuantity,
+  showOnlyMissing = false,
 }: StickerListProps) {
   return (
     <section className="flex flex-col gap-0.5" aria-label="Lista condensada">
       {stickers.map((sticker) => {
         const quantity = getStickerQuantity(collection, sticker.id);
-        const team = sticker.team;
-
-        const fifaCode = team?.fifaCode?.toUpperCase() ?? null;
-        const isoCode = fifaCode ? FIFA_TO_ISO[fifaCode]?.toLowerCase() : null;
-        const flagCode = isoCode ?? team?.countryCode?.toLowerCase() ?? null;
-        const primaryColor = team?.primaryColor ?? null;
-        const secondaryColor = team?.secondaryColor ?? null;
-
-        const rowClasses = quantity > 0
-          ? "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12"
-          : "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12";
-
-        let bgStyle: CSSProperties | undefined;
+        const isHidden = showOnlyMissing && quantity > 0;
         
-        if (sticker.groupCode === "FWC") {
-          bgStyle = {
-            background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
-          } as CSSProperties;
-        } else if (primaryColor || secondaryColor) {
-          bgStyle = {
-            "--team-primary": primaryColor,
-            "--team-secondary": secondaryColor,
-            "--team-text": getContrastColor(primaryColor),
-            background: primaryColor 
-              ? `linear-gradient(135deg, ${primaryColor}20 0%, ${secondaryColor}30 100%)`
-              : undefined,
-          } as CSSProperties;
-        }
-
-        return (
-          <div
-            key={sticker.id}
-            className={rowClasses}
-            style={bgStyle}
-          >
-            <div className="min-w-8 h-7 flex items-center justify-center rounded-md bg-white/70 text-sm font-extrabold text-[var(--color-navy)]">{quantity}</div>
-
-            <div className="flex-1 flex items-center gap-2 min-w-0">
-              {flagCode && (
-                <img
-                  src={`https://flagcdn.com/w80/${flagCode}.png`}
-                  alt={team?.name ?? ""}
-                  className="w-7 h-5 object-contain rounded-sm flex-shrink-0"
-                  loading="lazy"
-                />
-              )}
-              <span className="text-sm font-bold text-[var(--color-ink)]">{sticker.displayCode}</span>
-            </div>
-
-            <div className="grid grid-rows-2 gap-0.5 h-full">
-              <button
-                type="button"
-                className="w-8 h-full rounded-t-md text-lg font-bold flex items-center justify-center bg-white text-green-600 hover:bg-green-500 hover:text-white transition"
-                aria-label={`Adicionar ${sticker.displayCode}`}
-                onClick={() => onIncreaseQuantity(sticker.id)}
-              >
-                +
-              </button>
-              <button
-                type="button"
-                className="w-8 h-full rounded-b-md text-lg font-bold flex items-center justify-center bg-white text-red-600 hover:bg-red-500 hover:text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label={`Remover ${sticker.displayCode}`}
-                disabled={quantity === 0}
-                onClick={() => onDecreaseQuantity(sticker.id)}
-              >
-                −
-              </button>
-            </div>
-          </div>
-        );
+        return <StickerRowWithFade 
+          key={sticker.id} 
+          sticker={sticker} 
+          quantity={quantity}
+          isHidden={isHidden}
+          team={sticker.team}
+          onIncreaseQuantity={onIncreaseQuantity}
+          onDecreaseQuantity={onDecreaseQuantity}
+        />
       })}
     </section>
+  );
+}
+
+type StickerRowWithFadeProps = {
+  sticker: Sticker;
+  quantity: number;
+  isHidden: boolean;
+  team?: Sticker["team"];
+  onIncreaseQuantity: (stickerId: number) => void;
+  onDecreaseQuantity: (stickerId: number) => void;
+};
+
+function StickerRowWithFade({
+  sticker,
+  quantity,
+  isHidden,
+  team,
+  onIncreaseQuantity,
+  onDecreaseQuantity,
+}: StickerRowWithFadeProps) {
+  const [showRow, setShowRow] = useState(true);
+
+  useEffect(() => {
+    if (isHidden && showRow) {
+      const timer = setTimeout(() => {
+        setShowRow(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+    if (!isHidden) {
+      setShowRow(true);
+    }
+  }, [isHidden, showRow]);
+
+  if (!showRow) return null;
+
+  const fifaCode = team?.fifaCode?.toUpperCase() ?? null;
+  const isoCode = fifaCode ? FIFA_TO_ISO[fifaCode]?.toLowerCase() : null;
+  const flagCode = isoCode ?? team?.countryCode?.toLowerCase() ?? null;
+  const primaryColor = team?.primaryColor ?? null;
+  const secondaryColor = team?.secondaryColor ?? null;
+
+  const rowClasses = isHidden
+    ? "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12 sticker-row--hidden"
+    : quantity > 0
+      ? "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12"
+      : "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg min-h-12";
+
+  let bgStyle: CSSProperties | undefined;
+  
+  if (sticker.groupCode === "FWC") {
+    bgStyle = {
+      background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
+    } as CSSProperties;
+  } else if (primaryColor || secondaryColor) {
+    bgStyle = {
+      "--team-primary": primaryColor,
+      "--team-secondary": secondaryColor,
+      "--team-text": getContrastColor(primaryColor),
+      background: primaryColor 
+        ? `linear-gradient(135deg, ${primaryColor}20 0%, ${secondaryColor}30 100%)`
+        : undefined,
+    } as CSSProperties;
+  }
+
+  return (
+    <div className={rowClasses} style={bgStyle}>
+      <div className="min-w-8 h-7 flex items-center justify-center rounded-md bg-white/70 text-sm font-extrabold text-[var(--color-navy)]">{quantity}</div>
+
+      <div className="flex-1 flex items-center gap-2 min-w-0">
+        {flagCode && (
+          <img
+            src={`https://flagcdn.com/w80/${flagCode}.png`}
+            alt={team?.name ?? ""}
+            className="w-7 h-5 object-contain rounded-sm flex-shrink-0"
+            loading="lazy"
+          />
+        )}
+        <span className="text-sm font-bold text-[var(--color-ink)]">{sticker.displayCode}</span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          className="w-8 h-8 rounded-full text-lg font-bold flex items-center justify-center bg-white text-red-600 hover:bg-red-500 hover:text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label={`Remover ${sticker.displayCode}`}
+          disabled={quantity === 0}
+          onClick={() => onDecreaseQuantity(sticker.id)}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="w-8 h-8 rounded-full text-lg font-bold flex items-center justify-center bg-white text-green-600 hover:bg-green-500 hover:text-white transition"
+          aria-label={`Adicionar ${sticker.displayCode}`}
+          onClick={() => onIncreaseQuantity(sticker.id)}
+        >
+          +
+        </button>
+      </div>
+    </div>
   );
 }

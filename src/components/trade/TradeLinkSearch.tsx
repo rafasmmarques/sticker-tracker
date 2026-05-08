@@ -60,18 +60,18 @@ export function TradeLinkSearch() {
   }
 
   return (
-    <div className="flex flex-col gap-2 p-4 bg-white rounded-2xl shadow-sm">
-      <label className="text-sm font-bold text-[var(--color-ink)]">
+    <div className="w-full max-w-2xl mx-auto p-4 bg-white rounded-2xl shadow-sm">
+      <label className="block text-sm font-bold text-[var(--color-ink)] mb-2">
         Comparar com outra coleção
       </label>
-      <div className="flex flex-col sm:flex-row items-stretch">
-        <div className="flex items-center">
-          <span className="px-3 py-2.5 bg-[var(--color-border)] rounded-l-full border border-r-0 border-[var(--color-border)] text-sm text-[var(--color-muted)] whitespace-nowrap">
+      <div className="flex items-stretch w-full">
+        <div className="flex items-center flex-1">
+          <span className="px-3 py-2.5 bg-[var(--color-border)] rounded-l-lg border border-r-0 border-[var(--color-border)] text-sm text-[var(--color-muted)] whitespace-nowrap">
             /trocas/
           </span>
           <input
             type="text"
-            className="flex-1 min-h-[42px] px-1 border-y border-[var(--color-border)] outline-none text-sm text-[var(--color-ink)]"
+            className="flex-1 min-h-[42px] px-3 border-y border-[var(--color-border)] outline-none text-sm text-[var(--color-ink)]"
             placeholder="nome-do-amigo"
             value={username}
             onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
@@ -81,7 +81,7 @@ export function TradeLinkSearch() {
         </div>
         <button
           type="button"
-          className="mt-2 sm:mt-0 sm:px-4 min-h-[42px] bg-[var(--color-navy)] text-white rounded-b-xl sm:rounded-r-full sm:rounded-l-none text-sm font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-w-[100px] min-h-[42px] bg-[var(--color-navy)] text-white rounded-r-lg border-r border-[var(--color-border)] text-sm font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           onClick={handleSearch}
           disabled={isSearching || username.trim().length < 3}
         >

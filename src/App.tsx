@@ -19,7 +19,6 @@ import {
   calculateCollectionSummary,
   filterStickersByCode,
   getStickersWithoutQuantity,
-  filterStickersMissing,
   getRepeatedStickers,
 } from "./utils/collection";
 import "./index.css";
@@ -69,9 +68,7 @@ function App() {
   const filteredStickers = useMemo(() => {
     let result = filterStickersByCode(stickers, search);
 
-    if (showOnlyMissing) {
-      result = filterStickersMissing(result, collection);
-    }
+    // Não filtrar mais por showOnlyMissing - componentes controlam visibilidade via isHidden
 
     if (selectedGroup) {
       if (selectedGroup === "specials") {
@@ -90,7 +87,7 @@ function App() {
     }
 
     return result;
-  }, [stickers, search, showOnlyMissing, selectedGroup, collection]);
+  }, [stickers, search, selectedGroup, collection]);
 
   const missingStickers = useMemo(() => {
     return getStickersWithoutQuantity(stickers, collection);
@@ -99,27 +96,6 @@ function App() {
   const repeatedStickers = useMemo(() => {
     return getRepeatedStickers(stickers, collection);
   }, [stickers, collection]);
-
-  const groups = useMemo(() => {
-    const groupMap = new Map<string, { fifaCode: string; name: string }[]>();
-
-    stickers.forEach((sticker) => {
-      const groupLetter = sticker.team?.groupLetter;
-      const fifaCode = sticker.team?.fifaCode;
-      const teamName = sticker.team?.name;
-      if (groupLetter && fifaCode && teamName) {
-        const existing = groupMap.get(groupLetter) ?? [];
-        if (!existing.some((t) => t.fifaCode === fifaCode)) {
-          existing.push({ fifaCode, name: teamName });
-          groupMap.set(groupLetter, existing);
-        }
-      }
-    });
-
-    return Array.from(groupMap.entries())
-      .map(([letter, teams]) => ({ letter, teams }))
-      .sort((a, b) => a.letter.localeCompare(b.letter));
-  }, [stickers]);
 
   const summary = useMemo(() => {
     return calculateCollectionSummary(stickers, collection, stickers.length);
@@ -205,7 +181,6 @@ function App() {
               onShowOnlyMissingChange={setShowOnlyMissing}
               selectedGroup={selectedGroup}
               onGroupChange={setSelectedGroup}
-              groups={groups}
               onExportList={copyToClipboard}
               onOpenImportDialog={() => setShowImportDialog(true)}
               onClearCollection={clearCollection}
@@ -241,6 +216,7 @@ function App() {
                 collection={collection}
                 onIncreaseQuantity={increaseStickerQuantity}
                 onDecreaseQuantity={decreaseStickerQuantity}
+                showOnlyMissing={showOnlyMissing}
               />
             ) : (
               <StickerGrid
