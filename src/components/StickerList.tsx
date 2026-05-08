@@ -191,8 +191,13 @@ function StickerRowWithFade({
       }, 400);
       return () => clearTimeout(timer);
     }
-    if (!isHidden) {
-      setShowRow(true);
+
+    if (!isHidden && !showRow) {
+      const timer = setTimeout(() => {
+        setShowRow(true);
+      }, 0);
+
+      return () => clearTimeout(timer);
     }
   }, [isHidden, showRow]);
 
