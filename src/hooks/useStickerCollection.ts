@@ -5,6 +5,10 @@ import {
   syncUserStickerCollection,
 } from "../services/stickerCollectionService";
 import type { StickerCollection } from "../types/sticker";
+import {
+  applyStickerTradeToCollection,
+  increaseCollectionQuantity,
+} from "../utils/collection";
 
 type SaveCollectionResult = "local" | "cloud";
 
@@ -137,10 +141,9 @@ export function useStickerCollection(userId?: string) {
   }, [collection, userId]);
 
   function increaseStickerQuantity(stickerId: number) {
-    setCollection((currentCollection) => ({
-      ...currentCollection,
-      [stickerId]: (currentCollection[stickerId] ?? 0) + 1,
-    }));
+    setCollection((currentCollection) =>
+      increaseCollectionQuantity(currentCollection, stickerId)
+    );
   }
 
   function decreaseStickerQuantity(stickerId: number) {
@@ -261,25 +264,13 @@ export function useStickerCollection(userId?: string) {
   }
 
   function applyTrade(outgoingStickerIds: number[], incomingStickerIds: number[]) {
-    setCollection((currentCollection) => {
-      const updated = { ...currentCollection };
-
-      for (const id of outgoingStickerIds) {
-        const currentQty = updated[id] ?? 0;
-        if (currentQty > 1) {
-          updated[id] = currentQty - 1;
-        } else {
-          delete updated[id];
-        }
-      }
-
-      for (const id of incomingStickerIds) {
-        const currentQty = updated[id] ?? 0;
-        updated[id] = currentQty + 1;
-      }
-
-      return updated;
-    });
+    setCollection((currentCollection) =>
+      applyStickerTradeToCollection(
+        currentCollection,
+        outgoingStickerIds,
+        incomingStickerIds
+      )
+    );
   }
 
   return {
