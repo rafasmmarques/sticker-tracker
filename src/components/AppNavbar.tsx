@@ -8,7 +8,6 @@ import {
 } from "../services/authService";
 import { getProfile, updateTradeLink } from "../services/profileService";
 import { showToast } from "../utils/toast";
-import type { GroupOption } from "./CollectionToolbar";
 import {
   NavbarIconButton,
   FiltersDropdown,
@@ -24,7 +23,6 @@ type AppNavbarProps = {
   onShowOnlyMissingChange: (show: boolean) => void;
   selectedGroup: string;
   onGroupChange: (group: string) => void;
-  groups: GroupOption[];
   onExportList: (type: "missing" | "repeated") => void;
   onOpenImportDialog: () => void;
   onClearCollection: () => void;
@@ -48,7 +46,6 @@ export function AppNavbar({
   onShowOnlyMissingChange,
   selectedGroup,
   onGroupChange,
-  groups,
   onExportList,
   onOpenImportDialog,
   onClearCollection,
@@ -275,7 +272,6 @@ export function AppNavbar({
             onShowOnlyMissingChange={onShowOnlyMissingChange}
             selectedGroup={selectedGroup}
             onGroupChange={onGroupChange}
-            groups={groups}
             onExportList={(type) => {
               onExportList(type);
               setOpenDropdown(null);
@@ -286,6 +282,7 @@ export function AppNavbar({
             }}
             isCondensedMode={isCondensedMode}
             onCondensedModeChange={onCondensedModeChange}
+            onClose={() => setOpenDropdown(null)}
           />
         )}
 

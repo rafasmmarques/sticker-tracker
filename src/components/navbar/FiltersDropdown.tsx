@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faCopy, faDownload, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import type { GroupOption } from "../CollectionToolbar";
+import { faStar, faCopy, faDownload, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { FIFA_TO_ISO, WORLD_CUP_2026_TEAM_ORDER } from "../../utils/countryCodes";
 
 type ExportListType = "missing" | "repeated";
 
@@ -12,11 +12,11 @@ type FiltersDropdownProps = {
   onShowOnlyMissingChange: (show: boolean) => void;
   selectedGroup: string;
   onGroupChange: (group: string) => void;
-  groups: GroupOption[];
   onExportList: (type: ExportListType) => void;
   onOpenImportDialog: () => void;
   isCondensedMode: boolean;
   onCondensedModeChange: (condensed: boolean) => void;
+  onClose: () => void;
 };
 
 export function FiltersDropdown({
@@ -26,11 +26,11 @@ export function FiltersDropdown({
   onShowOnlyMissingChange,
   selectedGroup,
   onGroupChange,
-  groups,
   onExportList,
   onOpenImportDialog,
   isCondensedMode,
   onCondensedModeChange,
+  onClose,
 }: FiltersDropdownProps) {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportType, setExportType] = useState<ExportListType>("missing");
@@ -57,6 +57,11 @@ export function FiltersDropdown({
             placeholder="Buscar figurinha..."
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                onClose();
+              }
+            }}
             aria-label="Buscar por código, seleção ou jogador"
           />
         </label>
@@ -91,26 +96,55 @@ export function FiltersDropdown({
             <span className="text-xs font-semibold text-[var(--color-ink)]">Lista</span>
           </div>
 
-          <div className="relative w-full">
-            <select
-              className="h-12 w-full appearance-none rounded-xl border border-black/10 bg-white px-4 pr-10 text-base font-semibold text-[var(--color-ink)] outline-none"
-              value={selectedGroup}
-              onChange={(event) => onGroupChange(event.target.value)}
-              aria-label="Filtrar por seleção"
+          <div className="space-y-3">
+            <button
+              type="button"
+              className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border-2 transition-all ${
+                selectedGroup === "specials"
+                  ? "border-amber-400 bg-amber-50"
+                  : "border-black/10 bg-white hover:border-black/20"
+              }`}
+              onClick={() => {
+                onGroupChange(selectedGroup === "specials" ? "" : "specials");
+                onClose();
+              }}
+              aria-label="Filtrar especiais"
             >
-              <option value="">Seleção</option>
-              <option value="specials">Especiais</option>
-              {groups.map((group) => (
-                <optgroup key={group.letter} label={`Grupo ${group.letter}`}>
-                  {group.teams.map((team) => (
-                    <option key={team.fifaCode} value={team.fifaCode}>
-                      {team.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <FontAwesomeIcon icon={faChevronDown} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-navy)]" />
+              <FontAwesomeIcon icon={faStar} className="text-amber-400" />
+              <span className="text-sm font-bold text-[var(--color-ink)]">Especiais</span>
+            </button>
+
+            <div className="grid grid-cols-8 gap-1">
+              {WORLD_CUP_2026_TEAM_ORDER.map((team) => {
+                const isoCode = FIFA_TO_ISO[team.fifaCode]?.toLowerCase();
+                const isSelected = selectedGroup === team.fifaCode;
+                return (
+                  <button
+                    key={team.fifaCode}
+                    type="button"
+                    className={`aspect-[5/3] rounded border-2 transition-all ${
+                      isSelected
+                        ? "border-[var(--color-navy)] bg-blue-50"
+                        : "border-transparent hover:border-black/20"
+                    }`}
+                    onClick={() => {
+                      onGroupChange(isSelected ? "" : team.fifaCode);
+                      onClose();
+                    }}
+                    aria-label={`Filtrar ${team.name}`}
+                    title={team.name}
+                  >
+                    {isoCode && (
+                      <img
+                        src={`https://flagcdn.com/w40/${isoCode}.png`}
+                        alt={team.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

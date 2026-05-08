@@ -97,27 +97,6 @@ function App() {
     return getRepeatedStickers(stickers, collection);
   }, [stickers, collection]);
 
-  const groups = useMemo(() => {
-    const groupMap = new Map<string, { fifaCode: string; name: string }[]>();
-
-    stickers.forEach((sticker) => {
-      const groupLetter = sticker.team?.groupLetter;
-      const fifaCode = sticker.team?.fifaCode;
-      const teamName = sticker.team?.name;
-      if (groupLetter && fifaCode && teamName) {
-        const existing = groupMap.get(groupLetter) ?? [];
-        if (!existing.some((t) => t.fifaCode === fifaCode)) {
-          existing.push({ fifaCode, name: teamName });
-          groupMap.set(groupLetter, existing);
-        }
-      }
-    });
-
-    return Array.from(groupMap.entries())
-      .map(([letter, teams]) => ({ letter, teams }))
-      .sort((a, b) => a.letter.localeCompare(b.letter));
-  }, [stickers]);
-
   const summary = useMemo(() => {
     return calculateCollectionSummary(stickers, collection, stickers.length);
   }, [stickers, collection]);
@@ -202,7 +181,6 @@ function App() {
               onShowOnlyMissingChange={setShowOnlyMissing}
               selectedGroup={selectedGroup}
               onGroupChange={setSelectedGroup}
-              groups={groups}
               onExportList={copyToClipboard}
               onOpenImportDialog={() => setShowImportDialog(true)}
               onClearCollection={clearCollection}
