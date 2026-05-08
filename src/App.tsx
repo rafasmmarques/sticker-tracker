@@ -19,7 +19,6 @@ import {
   calculateCollectionSummary,
   filterStickersByCode,
   getStickersWithoutQuantity,
-  filterStickersMissing,
   getRepeatedStickers,
 } from "./utils/collection";
 import "./index.css";
@@ -69,9 +68,7 @@ function App() {
   const filteredStickers = useMemo(() => {
     let result = filterStickersByCode(stickers, search);
 
-    if (showOnlyMissing) {
-      result = filterStickersMissing(result, collection);
-    }
+    // Não filtrar mais por showOnlyMissing - componentes controlam visibilidade via isHidden
 
     if (selectedGroup) {
       if (selectedGroup === "specials") {
@@ -90,7 +87,7 @@ function App() {
     }
 
     return result;
-  }, [stickers, search, showOnlyMissing, selectedGroup, collection]);
+  }, [stickers, search, selectedGroup, collection]);
 
   const missingStickers = useMemo(() => {
     return getStickersWithoutQuantity(stickers, collection);
@@ -241,6 +238,7 @@ function App() {
                 collection={collection}
                 onIncreaseQuantity={increaseStickerQuantity}
                 onDecreaseQuantity={decreaseStickerQuantity}
+                showOnlyMissing={showOnlyMissing}
               />
             ) : (
               <StickerGrid

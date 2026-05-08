@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import type { Sticker } from "../types/sticker";
 
 const FIFA_TO_ISO: Record<string, string> = {
@@ -127,6 +128,22 @@ export function StickerCard({
   onDecreaseQuantity,
   isHidden = false,
 }: StickerCardProps) {
+  const [showSticker, setShowSticker] = useState(true);
+
+  useEffect(() => {
+    if (isHidden && showSticker) {
+      const timer = setTimeout(() => {
+        setShowSticker(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+    if (!isHidden) {
+      setShowSticker(true);
+    }
+  }, [isHidden]);
+
+  if (!showSticker) return null;
+
   const repeatedQuantity = Math.max(quantity - 1, 0);
   const team = sticker.team;
 
