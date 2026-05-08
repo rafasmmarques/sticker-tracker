@@ -113,52 +113,64 @@ export const FIFA_TO_ISO: Record<string, string> = {
 };
 
 export const WORLD_CUP_2026_TEAM_ORDER = [
+  // Grupo A
   { fifaCode: "MEX", name: "México" },
-  { fifaCode: "KOR", name: "Coreia do Sul" },
   { fifaCode: "RSA", name: "África do Sul" },
+  { fifaCode: "KOR", name: "Coreia do Sul" },
   { fifaCode: "CZE", name: "República Tcheca" },
+  // Grupo B
   { fifaCode: "CAN", name: "Canadá" },
-  { fifaCode: "SUI", name: "Suíça" },
-  { fifaCode: "QAT", name: "Catar" },
   { fifaCode: "BIH", name: "Bósnia e Herzegovina" },
+  { fifaCode: "QAT", name: "Catar" },
+  { fifaCode: "SUI", name: "Suíça" },
+  // Grupo C
   { fifaCode: "BRA", name: "Brasil" },
   { fifaCode: "MAR", name: "Marrocos" },
-  { fifaCode: "SCO", name: "Escócia" },
   { fifaCode: "HAI", name: "Haiti" },
+  { fifaCode: "SCO", name: "Escócia" },
+  // Grupo D
   { fifaCode: "USA", name: "Estados Unidos" },
-  { fifaCode: "AUS", name: "Austrália" },
   { fifaCode: "PAR", name: "Paraguai" },
+  { fifaCode: "AUS", name: "Austrália" },
   { fifaCode: "TUR", name: "Turquia" },
+  // Grupo E
   { fifaCode: "GER", name: "Alemanha" },
-  { fifaCode: "ECU", name: "Equador" },
-  { fifaCode: "CIV", name: "Costa do Marfim" },
   { fifaCode: "CUW", name: "Curaçao" },
+  { fifaCode: "CIV", name: "Costa do Marfim" },
+  { fifaCode: "ECU", name: "Equador" },
+  // Grupo F
   { fifaCode: "NED", name: "Holanda" },
   { fifaCode: "JPN", name: "Japão" },
-  { fifaCode: "TUN", name: "Tunísia" },
   { fifaCode: "SWE", name: "Suécia" },
+  { fifaCode: "TUN", name: "Tunísia" },
+  // Grupo G
   { fifaCode: "BEL", name: "Bélgica" },
-  { fifaCode: "IRN", name: "Irã" },
   { fifaCode: "EGY", name: "Egito" },
+  { fifaCode: "IRN", name: "Irã" },
   { fifaCode: "NZL", name: "Nova Zelândia" },
+  // Grupo H
   { fifaCode: "ESP", name: "Espanha" },
-  { fifaCode: "URU", name: "Uruguai" },
-  { fifaCode: "KSA", name: "Arábia Saudita" },
   { fifaCode: "CPV", name: "Cabo Verde" },
+  { fifaCode: "KSA", name: "Arábia Saudita" },
+  { fifaCode: "URU", name: "Uruguai" },
+  // Grupo I
   { fifaCode: "FRA", name: "França" },
   { fifaCode: "SEN", name: "Senegal" },
-  { fifaCode: "NOR", name: "Noruega" },
   { fifaCode: "IRQ", name: "Iraque" },
+  { fifaCode: "NOR", name: "Noruega" },
+  // Grupo J
   { fifaCode: "ARG", name: "Argentina" },
-  { fifaCode: "AUT", name: "Áustria" },
   { fifaCode: "ALG", name: "Argélia" },
+  { fifaCode: "AUT", name: "Áustria" },
   { fifaCode: "JOR", name: "Jordânia" },
+  // Grupo K
   { fifaCode: "POR", name: "Portugal" },
-  { fifaCode: "COL", name: "Colômbia" },
-  { fifaCode: "UZB", name: "Uzbequistão" },
   { fifaCode: "COD", name: "RD Congo" },
+  { fifaCode: "UZB", name: "Uzbequistão" },
+  { fifaCode: "COL", name: "Colômbia" },
+  // Grupo L
   { fifaCode: "ENG", name: "Inglaterra" },
   { fifaCode: "CRO", name: "Croácia" },
-  { fifaCode: "PAN", name: "Panamá" },
   { fifaCode: "GHA", name: "Gana" },
+  { fifaCode: "PAN", name: "Panamá" },
 ];
