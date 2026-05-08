@@ -60,18 +60,18 @@ export function TradeLinkSearch() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 bg-white rounded-2xl shadow-sm">
+    <div className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-4 shadow-sm">
       <label className="block text-sm font-bold text-[var(--color-ink)] mb-2">
         Comparar com outra coleção
       </label>
-      <div className="flex items-stretch w-full">
-        <div className="flex items-center flex-1">
-          <span className="px-3 py-2.5 bg-[var(--color-border)] rounded-l-lg border border-r-0 border-[var(--color-border)] text-sm text-[var(--color-muted)] whitespace-nowrap">
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-stretch">
+        <div className="flex min-w-0 flex-1 items-center">
+          <span className="flex min-h-[42px] items-center whitespace-nowrap rounded-l-lg border border-r-0 border-[var(--color-border)] bg-[var(--color-border)] px-3 py-2.5 text-sm text-[var(--color-muted)]">
             /trocas/
           </span>
           <input
             type="text"
-            className="flex-1 min-h-[42px] px-3 border-y border-[var(--color-border)] outline-none text-sm text-[var(--color-ink)]"
+            className="min-w-0 flex-1 rounded-r-lg border border-[var(--color-border)] px-3 py-2.5 text-sm text-[var(--color-ink)] outline-none sm:rounded-r-none sm:border-l-0"
             placeholder="nome-do-amigo"
             value={username}
             onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
@@ -81,7 +81,7 @@ export function TradeLinkSearch() {
         </div>
         <button
           type="button"
-          className="min-w-[100px] min-h-[42px] bg-[var(--color-navy)] text-white rounded-r-lg border-r border-[var(--color-border)] text-sm font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          className="min-h-[42px] w-full rounded-lg bg-[var(--color-navy)] px-4 text-sm font-bold whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-[100px] sm:rounded-l-none"
           onClick={handleSearch}
           disabled={isSearching || username.trim().length < 3}
         >

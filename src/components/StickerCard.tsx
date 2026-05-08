@@ -26,10 +26,15 @@ export function StickerCard({
       }, 400);
       return () => clearTimeout(timer);
     }
-    if (!isHidden) {
-      setShowSticker(true);
+
+    if (!isHidden && !showSticker) {
+      const timer = setTimeout(() => {
+        setShowSticker(true);
+      }, 0);
+
+      return () => clearTimeout(timer);
     }
-  }, [isHidden]);
+  }, [isHidden, showSticker]);
 
   if (!showSticker) return null;
 

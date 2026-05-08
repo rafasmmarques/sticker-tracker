@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router";
 import { AppHero } from "./components/AppHero";
 import { AppNavbar } from "./components/AppNavbar";
 import { BackToTopButton } from "./components/BackToTopButton";
+import { AlbumCompletedDialog } from "./components/AlbumCompletedDialog";
 import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { StickerGrid } from "./components/StickerGrid";
@@ -14,12 +15,16 @@ import { showToast } from "./utils/toast";
 import { useAuth } from "./hooks/useAuth";
 import { useStickerCatalog } from "./hooks/useStickerCatalog";
 import { useStickerCollection } from "./hooks/useStickerCollection";
+import { useCollectionCelebration } from "./hooks/useCollectionCelebration";
 import { useMediaQuery } from "./hooks/useMediaQuery";
+import { DEVELOPER_NAME, SUPPORT_PIX_KEY } from "./constants/support";
 import {
+  applyStickerTradeToCollection,
   calculateCollectionSummary,
   filterStickersByCode,
   getStickersWithoutQuantity,
   getRepeatedStickers,
+  increaseCollectionQuantity,
 } from "./utils/collection";
 import "./index.css";
 
@@ -47,6 +52,11 @@ function App() {
     importRepeatedList,
     applyTrade,
   } = useStickerCollection(user?.id);
+  const {
+    isAlbumDialogOpen,
+    closeAlbumDialog,
+    celebrateCollectionChange,
+  } = useCollectionCelebration(stickers, collection);
 
   const allStickerIds = useMemo(() => stickers.map((s) => s.id), [stickers]);
   const stickerCodeMap = useMemo(
@@ -63,6 +73,27 @@ function App() {
 
   const handleImportRepeatedList = (repeatedCodes: string[]) => {
     importRepeatedList(repeatedCodes, stickerCodeMap);
+  };
+
+  const handleIncreaseStickerQuantity = (stickerId: number) => {
+    const nextCollection = increaseCollectionQuantity(collection, stickerId);
+
+    celebrateCollectionChange(collection, nextCollection);
+    increaseStickerQuantity(stickerId);
+  };
+
+  const handleApplyTrade = (
+    outgoingStickerIds: number[],
+    incomingStickerIds: number[]
+  ) => {
+    const nextCollection = applyStickerTradeToCollection(
+      collection,
+      outgoingStickerIds,
+      incomingStickerIds
+    );
+
+    celebrateCollectionChange(collection, nextCollection);
+    applyTrade(outgoingStickerIds, incomingStickerIds);
   };
 
   const filteredStickers = useMemo(() => {
@@ -87,7 +118,7 @@ function App() {
     }
 
     return result;
-  }, [stickers, search, selectedGroup, collection]);
+  }, [stickers, search, selectedGroup]);
 
   const missingStickers = useMemo(() => {
     return getStickersWithoutQuantity(stickers, collection);
@@ -158,86 +189,93 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/trocas/:username"
-        element={
-          <PublicTradePage
-            userId={user?.id}
-            collection={collection}
-            applyTrade={applyTrade}
-          />
-        }
-      />
-      <Route
-        path="*"
-        element={
-          <main id="top" className="app-shell">
-            <AppNavbar
-              user={user}
-              search={search}
-              onSearchChange={setSearch}
-              showOnlyMissing={showOnlyMissing}
-              onShowOnlyMissingChange={setShowOnlyMissing}
-              selectedGroup={selectedGroup}
-              onGroupChange={setSelectedGroup}
-              onExportList={copyToClipboard}
-              onOpenImportDialog={() => setShowImportDialog(true)}
-              onClearCollection={clearCollection}
-              isCondensedMode={isCondensedMode}
-              onCondensedModeChange={setIsCondensedMode}
+    <>
+      <Routes>
+        <Route
+          path="/trocas/:username"
+          element={
+            <PublicTradePage
+              userId={user?.id}
+              collection={collection}
+              applyTrade={handleApplyTrade}
             />
-
-            <AppHero
-              onSaveCollection={handleSaveCollection}
-              isSavingCollection={isSyncing}
-              onOpenMarkAllDialog={() => setShowMarkAllDialog(true)}
-            />
-
-            <CollectionStats summary={summary} />
-
-            <TradeLinkSearch />
-
-            <CollectionToolbar
-              onMarkAllStickers={() => markAllStickers(allStickerIds)}
-              allStickersCount={allStickerIds.length}
-              onImportMissingList={handleImportMissingList}
-              onImportRepeatedList={handleImportRepeatedList}
-              showImportDialog={showImportDialog}
-              onCloseImportDialog={() => setShowImportDialog(false)}
-              showMarkAllDialog={showMarkAllDialog}
-              onShowMarkAllDialogChange={setShowMarkAllDialog}
-              showToast={showToast}
-            />
-
-            {isCondensedMode ? (
-              <StickerList
-                stickers={filteredStickers}
-                collection={collection}
-                onIncreaseQuantity={increaseStickerQuantity}
-                onDecreaseQuantity={decreaseStickerQuantity}
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <main id="top" className="app-shell">
+              <AppNavbar
+                user={user}
+                search={search}
+                onSearchChange={setSearch}
                 showOnlyMissing={showOnlyMissing}
+                onShowOnlyMissingChange={setShowOnlyMissing}
+                selectedGroup={selectedGroup}
+                onGroupChange={setSelectedGroup}
+                onExportList={copyToClipboard}
+                onOpenImportDialog={() => setShowImportDialog(true)}
+                onClearCollection={clearCollection}
+                isCondensedMode={isCondensedMode}
+                onCondensedModeChange={setIsCondensedMode}
               />
-            ) : (
-              <StickerGrid
-                stickers={filteredStickers}
-                collection={collection}
-                onIncreaseQuantity={increaseStickerQuantity}
-                onDecreaseQuantity={decreaseStickerQuantity}
-                showOnlyMissing={showOnlyMissing}
+
+              <AppHero
+                onSaveCollection={handleSaveCollection}
+                isSavingCollection={isSyncing}
+                onOpenMarkAllDialog={() => setShowMarkAllDialog(true)}
               />
-            )}
 
-            <BackToTopButton />
+              <CollectionStats summary={summary} />
 
-            <AppFooter
-              developerName="Rafael Marques"
-              pixKey="61981141486"
-            />
-          </main>
-        }
+              <TradeLinkSearch />
+
+              <CollectionToolbar
+                onMarkAllStickers={() => markAllStickers(allStickerIds)}
+                allStickersCount={allStickerIds.length}
+                onImportMissingList={handleImportMissingList}
+                onImportRepeatedList={handleImportRepeatedList}
+                showImportDialog={showImportDialog}
+                onCloseImportDialog={() => setShowImportDialog(false)}
+                showMarkAllDialog={showMarkAllDialog}
+                onShowMarkAllDialogChange={setShowMarkAllDialog}
+                showToast={showToast}
+              />
+
+              {isCondensedMode ? (
+                <StickerList
+                  stickers={filteredStickers}
+                  collection={collection}
+                  onIncreaseQuantity={handleIncreaseStickerQuantity}
+                  onDecreaseQuantity={decreaseStickerQuantity}
+                  showOnlyMissing={showOnlyMissing}
+                />
+              ) : (
+                <StickerGrid
+                  stickers={filteredStickers}
+                  collection={collection}
+                  onIncreaseQuantity={handleIncreaseStickerQuantity}
+                  onDecreaseQuantity={decreaseStickerQuantity}
+                  showOnlyMissing={showOnlyMissing}
+                />
+              )}
+
+              <BackToTopButton />
+
+              <AppFooter
+                developerName={DEVELOPER_NAME}
+                pixKey={SUPPORT_PIX_KEY}
+              />
+            </main>
+          }
+        />
+      </Routes>
+
+      <AlbumCompletedDialog
+        isOpen={isAlbumDialogOpen}
+        onClose={closeAlbumDialog}
       />
-    </Routes>
+    </>
   );
 }
 

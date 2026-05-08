@@ -70,9 +70,6 @@ export function AppNavbar({
 
   useEffect(() => {
     if (!user?.id) {
-      setTradeUsername("");
-      setTradeLinkAtivo(false);
-      setProfileLoaded(false);
       return;
     }
 
@@ -81,6 +78,8 @@ export function AppNavbar({
 
     async function loadProfile() {
       try {
+        setTradeUsername("");
+        setTradeLinkAtivo(false);
         setProfileLoaded(false);
         const profile = await getProfile(userId);
         if (cancelled) return;

@@ -51,6 +51,7 @@
 @import './styles/brand-mark.css';
 @import './styles/collection-stats.css';
 @import './styles/collection-toolbar.css';
+@import './styles/album-completed-dialog.css';
 @import './styles/stickers.css';
 @import './styles/sticker-list.css';
 @import './styles/toast.css';
