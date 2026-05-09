@@ -60,7 +60,7 @@ export function TradeLinkSearch() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-4 shadow-sm">
+    <div className="w-full rounded-2xl bg-white p-4 shadow-sm">
       <label className="block text-sm font-bold text-[var(--color-ink)] mb-2">
         Comparar com outra coleção
       </label>
