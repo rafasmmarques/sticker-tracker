@@ -66,37 +66,39 @@ export function FiltersDropdown({
           />
         </label>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
-            <input
-              type="checkbox"
-              checked={showOnlyMissing}
-              onChange={(event) => onShowOnlyMissingChange(event.target.checked)}
-              className="h-5 w-5 cursor-pointer accent-[var(--color-navy)]"
-            />
-            <span>Faltando</span>
-          </label>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[var(--color-ink)]">Cards</span>
-            <button
-              type="button"
-              className="relative h-6 w-11 rounded-full bg-[var(--color-navy)] transition-colors duration-200"
-              onClick={() => onCondensedModeChange(!isCondensedMode)}
-              role="switch"
-              aria-checked={isCondensedMode}
-            >
-              <span
-                className={[
-                  "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200",
-                  isCondensedMode ? "translate-x-5" : "translate-x-0",
-                ].join(" ")}
+        <div className="flex flex-wrap items-center justify-between gap-4 md:grid md:grid-cols-[minmax(180px,0.42fr)_minmax(0,1fr)] md:items-start md:gap-5">
+          <div className="flex w-full items-center justify-between gap-4 md:flex-col md:items-start md:justify-start md:gap-4">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
+              <input
+                type="checkbox"
+                checked={showOnlyMissing}
+                onChange={(event) => onShowOnlyMissingChange(event.target.checked)}
+                className="h-5 w-5 cursor-pointer accent-[var(--color-navy)]"
               />
-            </button>
-            <span className="text-xs font-semibold text-[var(--color-ink)]">Lista</span>
+              <span>Faltando</span>
+            </label>
+
+            <div className="flex w-fit items-center gap-2 self-start">
+              <span className="text-xs font-semibold text-[var(--color-ink)]">Cards</span>
+              <button
+                type="button"
+                className="relative h-6 w-11 rounded-full bg-[var(--color-navy)] transition-colors duration-200"
+                onClick={() => onCondensedModeChange(!isCondensedMode)}
+                role="switch"
+                aria-checked={isCondensedMode}
+              >
+                <span
+                  className={[
+                    "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200",
+                    isCondensedMode ? "translate-x-5" : "translate-x-0",
+                  ].join(" ")}
+                />
+              </button>
+              <span className="text-xs font-semibold text-[var(--color-ink)]">Lista</span>
+            </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="w-full space-y-3 md:justify-self-end">
             <button
               type="button"
               className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border-2 transition-all ${
@@ -114,7 +116,7 @@ export function FiltersDropdown({
               <span className="text-sm font-bold text-[var(--color-ink)]">Especiais</span>
             </button>
 
-            <div className="grid grid-cols-8 gap-1">
+            <div className="grid grid-cols-8 gap-1 md:grid-cols-12 md:gap-2 lg:grid-cols-16">
               {WORLD_CUP_2026_TEAM_ORDER.map((team) => {
                 const isoCode = FIFA_TO_ISO[team.fifaCode]?.toLowerCase();
                 const isSelected = selectedGroup === team.fifaCode;
@@ -136,7 +138,7 @@ export function FiltersDropdown({
                   >
                     {isoCode && (
                       <img
-                        src={`https://flagcdn.com/w40/${isoCode}.png`}
+                        src={`https://flagcdn.com/${isoCode}.svg`}
                         alt={team.name}
                         className="w-full h-full object-cover"
                       />
