@@ -10,6 +10,8 @@ type FiltersDropdownProps = {
   onSearchChange: (search: string) => void;
   showOnlyMissing: boolean;
   onShowOnlyMissingChange: (show: boolean) => void;
+  showOnlyRepeated: boolean;
+  onShowOnlyRepeatedChange: (show: boolean) => void;
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   onExportList: (type: ExportListType) => void;
@@ -24,6 +26,8 @@ export function FiltersDropdown({
   onSearchChange,
   showOnlyMissing,
   onShowOnlyMissingChange,
+  showOnlyRepeated,
+  onShowOnlyRepeatedChange,
   selectedGroup,
   onGroupChange,
   onExportList,
@@ -67,7 +71,7 @@ export function FiltersDropdown({
         </label>
 
         <div className="flex flex-wrap items-center justify-between gap-4 md:grid md:grid-cols-[minmax(180px,0.42fr)_minmax(0,1fr)] md:items-start md:gap-5">
-          <div className="flex w-full items-center justify-between gap-4 md:flex-col md:items-start md:justify-start md:gap-4">
+          <div className="flex w-full flex-wrap items-center gap-3 md:flex-col md:items-start md:justify-start md:gap-4">
             <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
               <input
                 type="checkbox"
@@ -78,7 +82,17 @@ export function FiltersDropdown({
               <span>Faltando</span>
             </label>
 
-            <div className="flex w-fit items-center gap-2 self-start">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
+              <input
+                type="checkbox"
+                checked={showOnlyRepeated}
+                onChange={(event) => onShowOnlyRepeatedChange(event.target.checked)}
+                className="h-5 w-5 cursor-pointer accent-[var(--color-navy)]"
+              />
+              <span>Repetidas</span>
+            </label>
+
+            <div className="ml-auto flex w-fit items-center gap-2 self-start md:ml-0">
               <span className="text-xs font-semibold text-[var(--color-ink)]">Cards</span>
               <button
                 type="button"

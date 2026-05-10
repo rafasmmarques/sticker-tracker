@@ -31,6 +31,7 @@ import "./index.css";
 function App() {
   const [search, setSearch] = useState("");
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
+  const [showOnlyRepeated, setShowOnlyRepeated] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showMarkAllDialog, setShowMarkAllDialog] = useState(false);
@@ -98,8 +99,6 @@ function App() {
 
   const filteredStickers = useMemo(() => {
     let result = filterStickersByCode(stickers, search);
-
-    // Não filtrar mais por showOnlyMissing - componentes controlam visibilidade via isHidden
 
     if (selectedGroup) {
       if (selectedGroup === "specials") {
@@ -211,6 +210,8 @@ function App() {
                 onSearchChange={setSearch}
                 showOnlyMissing={showOnlyMissing}
                 onShowOnlyMissingChange={setShowOnlyMissing}
+                showOnlyRepeated={showOnlyRepeated}
+                onShowOnlyRepeatedChange={setShowOnlyRepeated}
                 selectedGroup={selectedGroup}
                 onGroupChange={setSelectedGroup}
                 onExportList={copyToClipboard}
@@ -249,6 +250,7 @@ function App() {
                   onIncreaseQuantity={handleIncreaseStickerQuantity}
                   onDecreaseQuantity={decreaseStickerQuantity}
                   showOnlyMissing={showOnlyMissing}
+                  showOnlyRepeated={showOnlyRepeated}
                 />
               ) : (
                 <StickerGrid
@@ -257,6 +259,7 @@ function App() {
                   onIncreaseQuantity={handleIncreaseStickerQuantity}
                   onDecreaseQuantity={decreaseStickerQuantity}
                   showOnlyMissing={showOnlyMissing}
+                  showOnlyRepeated={showOnlyRepeated}
                 />
               )}
 
