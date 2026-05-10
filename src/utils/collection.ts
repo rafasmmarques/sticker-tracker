@@ -52,7 +52,7 @@ export function getStickersWithoutQuantity(
   stickers: Sticker[],
   collection: StickerCollection,
 ): Sticker[] {
-  return stickers.filter(
+  return getCompletionStickers(stickers).filter(
     (sticker) => getStickerQuantity(collection, sticker.id) === 0,
   );
 }
@@ -73,12 +73,13 @@ export function calculateCollectionSummary(
   collection: StickerCollection,
   totalStickers: number,
 ): CollectionSummary {
-  const ownedCount = stickers.filter(
+  const completionStickers = getCompletionStickers(stickers);
+  const ownedCount = completionStickers.filter(
     (sticker) => getStickerQuantity(collection, sticker.id) > 0,
   ).length;
 
-  const repeatedCount = Object.values(collection).reduce((total, quantity) => {
-    return total + Math.max(quantity - 1, 0);
+  const repeatedCount = completionStickers.reduce((total, sticker) => {
+    return total + Math.max(getStickerQuantity(collection, sticker.id) - 1, 0);
   }, 0);
 
   const missingCount = Math.max(totalStickers - ownedCount, 0);
@@ -136,7 +137,7 @@ export function getCompletedSelections(
     { name: string; stickerIds: number[]; order: number }
   >();
 
-  stickers.forEach((sticker, index) => {
+  getCompletionStickers(stickers).forEach((sticker, index) => {
     if (!sticker.team) {
       return;
     }
@@ -171,9 +172,13 @@ export function isAlbumComplete(
   stickers: Sticker[],
   collection: StickerCollection,
 ): boolean {
+  const completionStickers = getCompletionStickers(stickers);
+
   return (
-    stickers.length > 0 &&
-    stickers.every((sticker) => getStickerQuantity(collection, sticker.id) > 0)
+    completionStickers.length > 0 &&
+    completionStickers.every(
+      (sticker) => getStickerQuantity(collection, sticker.id) > 0,
+    )
   );
 }
 
@@ -207,6 +212,10 @@ export function getStickerQuantity(
   stickerId: number,
 ): number {
   return collection[stickerId] ?? 0;
+}
+
+export function getCompletionStickers(stickers: Sticker[]): Sticker[] {
+  return stickers.filter((sticker) => sticker.countsForCompletion);
 }
 
 function getSelectionKey(team: StickerTeam): string {

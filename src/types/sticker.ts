@@ -38,6 +38,7 @@ export type Sticker = {
   playerPosition?: string | null;
   isSpecial: boolean;
   specialFinish?: string | null;
+  countsForCompletion: boolean;
   section?: string | null;
   pageNumber?: number | null;
   displayOrder: number;

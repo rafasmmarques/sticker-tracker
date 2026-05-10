@@ -95,6 +95,32 @@
     filter: drop-shadow(0 4px 8px rgba(20, 33, 61, 0.12));
 }
 
+.sticker-card__monogram {
+    display: inline-flex;
+    min-width: 92px;
+    min-height: 72px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(23, 27, 95, 0.1);
+    border-radius: 22px;
+    padding: 12px 14px;
+    color: rgba(23, 27, 95, 0.7);
+    background: rgba(255, 255, 255, 0.46);
+    box-shadow: 0 14px 28px rgba(20, 33, 61, 0.08);
+    font-size: clamp(1.8rem, 12vw, 3.2rem);
+    font-weight: 950;
+    line-height: 1;
+    text-align: center;
+    backdrop-filter: blur(8px);
+}
+
+.sticker-card__monogram--light {
+    border-color: rgba(255, 255, 255, 0.28);
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
 .sticker-card--mexico {
     --card-accent-primary: rgba(23, 115, 69, 0.16);
     --card-accent-secondary: rgba(216, 36, 47, 0.1);

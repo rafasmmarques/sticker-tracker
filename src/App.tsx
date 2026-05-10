@@ -22,6 +22,7 @@ import {
   applyStickerTradeToCollection,
   calculateCollectionSummary,
   filterStickersByCode,
+  getCompletionStickers,
   getStickersWithoutQuantity,
   getRepeatedStickers,
   increaseCollectionQuantity,
@@ -40,6 +41,9 @@ function App() {
 
   const { user } = useAuth();
   const { stickers } = useStickerCatalog();
+  const completionStickers = useMemo(() => {
+    return getCompletionStickers(stickers);
+  }, [stickers]);
 
   const {
     collection,
@@ -57,9 +61,19 @@ function App() {
     isAlbumDialogOpen,
     closeAlbumDialog,
     celebrateCollectionChange,
-  } = useCollectionCelebration(stickers, collection);
+  } = useCollectionCelebration(completionStickers, collection);
 
-  const allStickerIds = useMemo(() => stickers.map((s) => s.id), [stickers]);
+  const completionStickerIds = useMemo(
+    () => completionStickers.map((s) => s.id),
+    [completionStickers]
+  );
+  const completionStickerCodeMap = useMemo(
+    () =>
+      new Map(
+        completionStickers.map((s) => [s.id, s.displayCode] as [number, string])
+      ),
+    [completionStickers]
+  );
   const stickerCodeMap = useMemo(
     () =>
       new Map(
@@ -69,7 +83,7 @@ function App() {
   );
 
   const handleImportMissingList = (missingCodes: string[]) => {
-    importMissingList(missingCodes, stickerCodeMap);
+    importMissingList(missingCodes, completionStickerCodeMap);
   };
 
   const handleImportRepeatedList = (repeatedCodes: string[]) => {
@@ -109,6 +123,8 @@ function App() {
             sticker.specialFinish === "museum" ||
             sticker.specialFinish === "special"
         );
+      } else if (selectedGroup === "coca-cola") {
+        result = result.filter((sticker) => sticker.groupCode === "CC");
       } else {
         result = result.filter(
           (sticker) => sticker.team?.fifaCode === selectedGroup
@@ -120,16 +136,20 @@ function App() {
   }, [stickers, search, selectedGroup]);
 
   const missingStickers = useMemo(() => {
-    return getStickersWithoutQuantity(stickers, collection);
-  }, [stickers, collection]);
+    return getStickersWithoutQuantity(completionStickers, collection);
+  }, [completionStickers, collection]);
 
   const repeatedStickers = useMemo(() => {
     return getRepeatedStickers(stickers, collection);
   }, [stickers, collection]);
 
   const summary = useMemo(() => {
-    return calculateCollectionSummary(stickers, collection, stickers.length);
-  }, [stickers, collection]);
+    return calculateCollectionSummary(
+      completionStickers,
+      collection,
+      completionStickers.length
+    );
+  }, [completionStickers, collection]);
 
   async function handleSaveCollection() {
     try {
@@ -232,8 +252,8 @@ function App() {
               <TradeLinkSearch />
 
               <CollectionToolbar
-                onMarkAllStickers={() => markAllStickers(allStickerIds)}
-                allStickersCount={allStickerIds.length}
+                onMarkAllStickers={() => markAllStickers(completionStickerIds)}
+                allStickersCount={completionStickerIds.length}
                 onImportMissingList={handleImportMissingList}
                 onImportRepeatedList={handleImportRepeatedList}
                 showImportDialog={showImportDialog}

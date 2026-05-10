@@ -48,6 +48,7 @@ type StickerCatalogRow = {
   player_position: string | null;
   is_special: boolean;
   special_finish: string | null;
+  counts_for_completion: boolean;
   section: string | null;
   page_number: number | null;
   display_order: number;
@@ -73,6 +74,7 @@ export async function fetchStickerCatalog(): Promise<Sticker[]> {
       player_position,
       is_special,
       special_finish,
+      counts_for_completion,
       section,
       page_number,
       display_order,
@@ -137,6 +139,7 @@ function mapStickerCatalogRow(row: StickerCatalogRow): Sticker {
     playerPosition: row.player_position,
     isSpecial: row.is_special,
     specialFinish: row.special_finish,
+    countsForCompletion: row.counts_for_completion,
     section: row.section,
     pageNumber: row.page_number,
     displayOrder: row.display_order,
