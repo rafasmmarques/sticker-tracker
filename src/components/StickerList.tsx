@@ -221,9 +221,14 @@ function StickerRowWithFade({
 
   let bgStyle: CSSProperties | undefined;
   
-  if (sticker.groupCode === "FWC") {
+  if (sticker.groupCode === "FWC" || sticker.groupCode === "PAN") {
     bgStyle = {
       background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
+    } as CSSProperties;
+  } else if (sticker.groupCode === "CC") {
+    bgStyle = {
+      background:
+        "linear-gradient(135deg, #e41f26 0%, #8d1117 46%, #050505 100%)",
     } as CSSProperties;
   } else if (primaryColor || secondaryColor) {
     bgStyle = {
@@ -235,6 +240,10 @@ function StickerRowWithFade({
         : undefined,
     } as CSSProperties;
   }
+  const codeClasses =
+    sticker.groupCode === "CC"
+      ? "text-sm font-bold text-white"
+      : "text-sm font-bold text-[var(--color-ink)]";
 
   return (
     <div className={rowClasses} style={bgStyle}>
@@ -249,7 +258,7 @@ function StickerRowWithFade({
             loading="lazy"
           />
         )}
-        <span className="text-sm font-bold text-[var(--color-ink)]">{sticker.displayCode}</span>
+        <span className={codeClasses}>{sticker.displayCode}</span>
       </div>
 
       <div className="flex items-center gap-1.5">

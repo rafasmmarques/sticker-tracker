@@ -445,12 +445,48 @@ export const TEAM_GROUPS: TeamSeed[] = [
   },
 ];
 
-export const TOTAL_STICKERS = 980;
+export const TOTAL_STICKERS = 981;
 
 export const stickers: Sticker[] = [
+  createPaniniLogoSticker(),
   ...createIntroStickers(),
   ...createTeamStickers(),
+  ...createCocaColaStickers(),
 ];
+
+function createPaniniLogoSticker(): Sticker {
+  return {
+    id: 995,
+    code: "PAN-000",
+    number: 995,
+    albumCode: "00",
+    groupCode: "PAN",
+    numberInGroup: 0,
+    displayCode: "00",
+    playerName: null,
+    playerPosition: null,
+    isSpecial: true,
+    specialFinish: "Especial",
+    countsForCompletion: true,
+    section: "Logo Panini",
+    pageNumber: null,
+    displayOrder: 0,
+    team: null,
+    group: {
+      id: 49,
+      code: "PAN",
+      name: "Logo Panini",
+      type: "intro",
+      displayOrder: 0,
+    },
+    type: {
+      id: 6,
+      slug: "special",
+      name: "Especial",
+      isSpecial: true,
+    },
+  };
+}
 
 function createIntroStickers(): Sticker[] {
   return Array.from({ length: 20 }, (_, index) => {
@@ -470,6 +506,7 @@ function createIntroStickers(): Sticker[] {
       playerPosition: null,
       isSpecial: true,
       specialFinish: "Especial",
+      countsForCompletion: true,
       section: numberInGroup <= 9 ? "Introdução" : "FIFA Museum",
       pageNumber: null,
       displayOrder: id,
@@ -511,6 +548,7 @@ function createTeamStickers(): Sticker[] {
         playerPosition: null,
         isSpecial: numberInGroup === 1,
         specialFinish: numberInGroup === 1 ? "Especial" : null,
+        countsForCompletion: true,
         section: team.name,
         pageNumber: null,
         displayOrder: id,
@@ -525,6 +563,46 @@ function createTeamStickers(): Sticker[] {
         type: stickerType,
       };
     });
+  });
+}
+
+function createCocaColaStickers(): Sticker[] {
+  return Array.from({ length: 14 }, (_, index) => {
+    const numberInGroup = index + 1;
+    const id = 980 + numberInGroup;
+    const albumCode = `CC${numberInGroup}`;
+
+    return {
+      id,
+      code: `CC-${numberInGroup.toString().padStart(3, "0")}`,
+      number: id,
+      albumCode,
+      groupCode: "CC",
+      numberInGroup,
+      displayCode: albumCode,
+      playerName: null,
+      playerPosition: null,
+      isSpecial: false,
+      specialFinish: null,
+      countsForCompletion: false,
+      section: "Coca-Cola",
+      pageNumber: null,
+      displayOrder: id,
+      team: null,
+      group: {
+        id: 50,
+        code: "CC",
+        name: "Coca-Cola",
+        type: "extra",
+        displayOrder: 50,
+      },
+      type: {
+        id: 8,
+        slug: "partner_extra",
+        name: "Extra promocional",
+        isSpecial: false,
+      },
+    };
   });
 }
 

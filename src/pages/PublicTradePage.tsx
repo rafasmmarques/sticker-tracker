@@ -8,6 +8,7 @@ import {
 import { useStickerCatalog } from "../hooks/useStickerCatalog";
 import {
   calculateCollectionSummary,
+  getCompletionStickers,
   getStickersWithoutQuantity,
   getRepeatedStickers,
 } from "../utils/collection";
@@ -31,6 +32,9 @@ export function PublicTradePage({
   const username = params.username ?? "";
   const shouldCompare = searchParams.get("comparar") === "1";
   const { stickers } = useStickerCatalog();
+  const completionStickers = useMemo(() => {
+    return getCompletionStickers(stickers);
+  }, [stickers]);
 
   const [publicCollection, setPublicCollection] =
     useState<StickerCollection | null>(null);
@@ -86,22 +90,22 @@ export function PublicTradePage({
   const displayError = error ?? initialError;
 
   const summary = useMemo(() => {
-    if (!stickers.length || !publicCollection) {
+    if (!completionStickers.length || !publicCollection) {
       return null;
     }
     return calculateCollectionSummary(
-      stickers,
+      completionStickers,
       publicCollection,
-      stickers.length
+      completionStickers.length
     );
-  }, [stickers, publicCollection]);
+  }, [completionStickers, publicCollection]);
 
   const missingStickers = useMemo(() => {
-    if (!stickers.length || !publicCollection) {
+    if (!completionStickers.length || !publicCollection) {
       return [];
     }
-    return getStickersWithoutQuantity(stickers, publicCollection);
-  }, [stickers, publicCollection]);
+    return getStickersWithoutQuantity(completionStickers, publicCollection);
+  }, [completionStickers, publicCollection]);
 
   const repeatedStickers = useMemo(() => {
     if (!stickers.length || !publicCollection) {

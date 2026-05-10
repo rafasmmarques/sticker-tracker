@@ -1,5 +1,5 @@
 insert into public.albums (slug, name, year, total_stickers)
-values ('world-cup-2026', 'World Cup 2026', 2026, 980)
+values ('world-cup-2026', 'World Cup 2026', 2026, 981)
 on conflict (slug) do update
 set
   name = excluded.name,
@@ -15,7 +15,8 @@ values
   (4, 'introduction', 'Introdução', true),
   (5, 'museum', 'Museum', true),
   (6, 'special', 'Especial', true),
-  (7, 'other', 'Outro', false)
+  (7, 'other', 'Outro', false),
+  (8, 'partner_extra', 'Extra promocional', false)
 on conflict (id) do update
 set
   slug = excluded.slug,
@@ -185,6 +186,64 @@ insert into public.sticker_groups (
 )
 select
   album.id,
+  null,
+  'PAN',
+  'Logo Panini',
+  'intro',
+  0
+from album
+on conflict (album_id, code) do update
+set
+  team_id = excluded.team_id,
+  name = excluded.name,
+  type = excluded.type,
+  display_order = excluded.display_order,
+  updated_at = now();
+
+with album as (
+  select id
+  from public.albums
+  where slug = 'world-cup-2026'
+)
+insert into public.sticker_groups (
+  album_id,
+  team_id,
+  code,
+  name,
+  type,
+  display_order
+)
+select
+  album.id,
+  null,
+  'CC',
+  'Coca-Cola',
+  'extra',
+  50
+from album
+on conflict (album_id, code) do update
+set
+  team_id = excluded.team_id,
+  name = excluded.name,
+  type = excluded.type,
+  display_order = excluded.display_order,
+  updated_at = now();
+
+with album as (
+  select id
+  from public.albums
+  where slug = 'world-cup-2026'
+)
+insert into public.sticker_groups (
+  album_id,
+  team_id,
+  code,
+  name,
+  type,
+  display_order
+)
+select
+  album.id,
   teams.id,
   teams.album_code,
   teams.name,
@@ -211,6 +270,41 @@ fwc_group as (
   join album on album.id = sticker_groups.album_id
   where sticker_groups.code = 'FWC'
 ),
+panini_group as (
+  select sticker_groups.id
+  from public.sticker_groups
+  join album on album.id = sticker_groups.album_id
+  where sticker_groups.code = 'PAN'
+),
+cc_group as (
+  select sticker_groups.id
+  from public.sticker_groups
+  join album on album.id = sticker_groups.album_id
+  where sticker_groups.code = 'CC'
+),
+panini_logo as (
+  select
+    995 as id,
+    'PAN-000' as code,
+    995 as number,
+    album.id as album_id,
+    panini_group.id as sticker_group_id,
+    null::bigint as team_id,
+    6::smallint as sticker_type_id,
+    '00' as album_code,
+    'PAN' as group_code,
+    0 as number_in_group,
+    '00' as display_code,
+    null::text as player_name,
+    null::text as player_position,
+    true as is_special,
+    'Especial'::text as special_finish,
+    true as counts_for_completion,
+    'Logo Panini'::text as section,
+    0 as display_order
+  from album
+  cross join panini_group
+),
 fwc_stickers as (
   select
     sticker_number as id,
@@ -231,6 +325,7 @@ fwc_stickers as (
     null::text as player_position,
     true as is_special,
     'Especial'::text as special_finish,
+    true as counts_for_completion,
     case
       when sticker_number <= 9 then 'Introdução'
       else 'Museum'
@@ -264,6 +359,7 @@ team_stickers as (
       when sticker_number = 1 then 'Especial'
       else null
     end as special_finish,
+    true as counts_for_completion,
     teams.name as section,
     20 + ((teams.display_order - 1) * 20) + sticker_number as display_order
   from album
@@ -273,10 +369,38 @@ team_stickers as (
    and sticker_groups.team_id = teams.id
   cross join generate_series(1, 20) as sticker_number
 ),
+coca_cola_stickers as (
+  select
+    980 + sticker_number as id,
+    format('CC-%s', lpad(sticker_number::text, 3, '0')) as code,
+    980 + sticker_number as number,
+    album.id as album_id,
+    cc_group.id as sticker_group_id,
+    null::bigint as team_id,
+    8::smallint as sticker_type_id,
+    format('CC%s', sticker_number) as album_code,
+    'CC' as group_code,
+    sticker_number as number_in_group,
+    format('CC%s', sticker_number) as display_code,
+    null::text as player_name,
+    null::text as player_position,
+    false as is_special,
+    null::text as special_finish,
+    false as counts_for_completion,
+    'Coca-Cola'::text as section,
+    980 + sticker_number as display_order
+  from album
+  cross join cc_group
+  cross join generate_series(1, 14) as sticker_number
+),
 catalog as (
+  select * from panini_logo
+  union all
   select * from fwc_stickers
   union all
   select * from team_stickers
+  union all
+  select * from coca_cola_stickers
 )
 insert into public.stickers (
   id,
@@ -294,6 +418,7 @@ insert into public.stickers (
   player_position,
   is_special,
   special_finish,
+  counts_for_completion,
   section,
   display_order
 )
@@ -313,6 +438,7 @@ select
   player_position,
   is_special,
   special_finish,
+  counts_for_completion,
   section,
   display_order
 from catalog
@@ -332,6 +458,7 @@ set
   player_position = excluded.player_position,
   is_special = excluded.is_special,
   special_finish = excluded.special_finish,
+  counts_for_completion = excluded.counts_for_completion,
   section = excluded.section,
   display_order = excluded.display_order,
   updated_at = now();

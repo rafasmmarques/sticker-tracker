@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faCopy, faDownload, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faBottleWater, faStar, faCopy, faDownload, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FIFA_TO_ISO, WORLD_CUP_2026_TEAM_ORDER } from "../../utils/countryCodes";
 
 type ExportListType = "missing" | "repeated";
@@ -96,14 +96,19 @@ export function FiltersDropdown({
               <span className="text-xs font-semibold text-[var(--color-ink)]">Cards</span>
               <button
                 type="button"
-                className="relative h-6 w-11 rounded-full bg-[var(--color-navy)] transition-colors duration-200"
+                className={[
+                  "inline-flex h-6 w-11 items-center rounded-full border p-px transition-colors duration-200",
+                  isCondensedMode
+                    ? "border-[var(--color-navy)] bg-[var(--color-navy)]"
+                    : "border-slate-300 bg-slate-300",
+                ].join(" ")}
                 onClick={() => onCondensedModeChange(!isCondensedMode)}
                 role="switch"
                 aria-checked={isCondensedMode}
               >
                 <span
                   className={[
-                    "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200",
+                    "h-[22px] w-[22px] rounded-full bg-white shadow-md transition-transform duration-200",
                     isCondensedMode ? "translate-x-5" : "translate-x-0",
                   ].join(" ")}
                 />
@@ -113,22 +118,41 @@ export function FiltersDropdown({
           </div>
 
           <div className="w-full space-y-3 md:justify-self-end">
-            <button
-              type="button"
-              className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border-2 transition-all ${
-                selectedGroup === "specials"
-                  ? "border-amber-400 bg-amber-50"
-                  : "border-black/10 bg-white hover:border-black/20"
-              }`}
-              onClick={() => {
-                onGroupChange(selectedGroup === "specials" ? "" : "specials");
-                onClose();
-              }}
-              aria-label="Filtrar especiais"
-            >
-              <FontAwesomeIcon icon={faStar} className="text-amber-400" />
-              <span className="text-sm font-bold text-[var(--color-ink)]">Especiais</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border-2 transition-all ${
+                  selectedGroup === "specials"
+                    ? "border-amber-400 bg-amber-50"
+                    : "border-black/10 bg-white hover:border-black/20"
+                }`}
+                onClick={() => {
+                  onGroupChange(selectedGroup === "specials" ? "" : "specials");
+                  onClose();
+                }}
+                aria-label="Filtrar especiais"
+              >
+                <FontAwesomeIcon icon={faStar} className="text-amber-400" />
+                <span className="text-sm font-bold text-[var(--color-ink)]">Especiais</span>
+              </button>
+
+              <button
+                type="button"
+                className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border-2 transition-all ${
+                  selectedGroup === "coca-cola"
+                    ? "border-red-500 bg-red-50"
+                    : "border-black/10 bg-white hover:border-black/20"
+                }`}
+                onClick={() => {
+                  onGroupChange(selectedGroup === "coca-cola" ? "" : "coca-cola");
+                  onClose();
+                }}
+                aria-label="Filtrar Coca-Cola"
+              >
+                <FontAwesomeIcon icon={faBottleWater} className="text-red-600" />
+                <span className="text-sm font-bold text-[var(--color-ink)]">Coca-Cola</span>
+              </button>
+            </div>
 
             <div className="grid grid-cols-8 gap-1 md:grid-cols-12 md:gap-2 lg:grid-cols-16">
               {WORLD_CUP_2026_TEAM_ORDER.map((team) => {

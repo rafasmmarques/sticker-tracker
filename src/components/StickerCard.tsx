@@ -47,19 +47,30 @@ export function StickerCard({
   const primaryColor = team?.primaryColor ?? null;
   const secondaryColor = team?.secondaryColor ?? null;
 
-  const isIntroSticker = sticker.groupCode === "FWC";
+  const isIntroSticker =
+    sticker.groupCode === "FWC" || sticker.groupCode === "PAN";
+  const isCocaColaSticker = sticker.groupCode === "CC";
+  const monogram = getStickerMonogram(sticker.groupCode);
   
   const cardStyle = isIntroSticker
     ? {
         background: "linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 50%, #d0d0d0 100%)",
         borderColor: "rgba(180, 180, 180, 0.4)",
       } as React.CSSProperties
-    : primaryColor || secondaryColor
+    : isCocaColaSticker
       ? {
-          "--team-primary": primaryColor,
-          "--team-secondary": secondaryColor,
+          "--team-primary": "#e41f26",
+          "--team-secondary": "#050505",
+          background:
+            "linear-gradient(135deg, #e41f26 0%, #8d1117 46%, #050505 100%)",
+          borderColor: "rgba(5, 5, 5, 0.42)",
         } as React.CSSProperties
-      : undefined;
+      : primaryColor || secondaryColor
+        ? {
+            "--team-primary": primaryColor,
+            "--team-secondary": secondaryColor,
+          } as React.CSSProperties
+        : undefined;
 
   return (
     <article className="flex flex-col gap-2.5">
@@ -81,6 +92,16 @@ export function StickerCard({
               className="sticker-card__flag"
               loading="lazy"
             />
+          ) : monogram ? (
+            <span
+              className={[
+                "sticker-card__monogram",
+                isCocaColaSticker ? "sticker-card__monogram--light" : "",
+              ].join(" ")}
+              aria-hidden="true"
+            >
+              {monogram}
+            </span>
           ) : null}
         </div>
 
@@ -136,4 +157,20 @@ function getStickerStatus(quantity: number): string {
   }
 
   return `${quantity}x`;
+}
+
+function getStickerMonogram(groupCode: string): string | null {
+  if (groupCode === "PAN") {
+    return "00";
+  }
+
+  if (groupCode === "FWC") {
+    return "FWC";
+  }
+
+  if (groupCode === "CC") {
+    return "CC";
+  }
+
+  return null;
 }
