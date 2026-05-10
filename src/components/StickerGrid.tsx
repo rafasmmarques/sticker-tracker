@@ -8,6 +8,7 @@ type StickerGridProps = {
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
   showOnlyMissing?: boolean;
+  showOnlyRepeated?: boolean;
 };
 
 export function StickerGrid({
@@ -16,6 +17,7 @@ export function StickerGrid({
   onIncreaseQuantity,
   onDecreaseQuantity,
   showOnlyMissing = false,
+  showOnlyRepeated = false,
 }: StickerGridProps) {
   return (
     <section
@@ -23,16 +25,23 @@ export function StickerGrid({
       className="stickers-grid"
       aria-label="Lista de figurinhas"
     >
-      {stickers.map((sticker) => (
-        <StickerCard
-          key={sticker.id}
-          sticker={sticker}
-          quantity={getStickerQuantity(collection, sticker.id)}
-          onIncreaseQuantity={onIncreaseQuantity}
-          onDecreaseQuantity={onDecreaseQuantity}
-          isHidden={showOnlyMissing && getStickerQuantity(collection, sticker.id) > 0}
-        />
-      ))}
+      {stickers.map((sticker) => {
+        const quantity = getStickerQuantity(collection, sticker.id);
+
+        return (
+          <StickerCard
+            key={sticker.id}
+            sticker={sticker}
+            quantity={quantity}
+            onIncreaseQuantity={onIncreaseQuantity}
+            onDecreaseQuantity={onDecreaseQuantity}
+            isHidden={
+              (showOnlyMissing && quantity > 0) ||
+              (showOnlyRepeated && quantity < 2)
+            }
+          />
+        );
+      })}
     </section>
   );
 }

@@ -21,6 +21,8 @@ type AppNavbarProps = {
   onSearchChange: (search: string) => void;
   showOnlyMissing: boolean;
   onShowOnlyMissingChange: (show: boolean) => void;
+  showOnlyRepeated: boolean;
+  onShowOnlyRepeatedChange: (show: boolean) => void;
   selectedGroup: string;
   onGroupChange: (group: string) => void;
   onExportList: (type: "missing" | "repeated") => void;
@@ -44,6 +46,8 @@ export function AppNavbar({
   onSearchChange,
   showOnlyMissing,
   onShowOnlyMissingChange,
+  showOnlyRepeated,
+  onShowOnlyRepeatedChange,
   selectedGroup,
   onGroupChange,
   onExportList,
@@ -269,6 +273,8 @@ export function AppNavbar({
             onSearchChange={onSearchChange}
             showOnlyMissing={showOnlyMissing}
             onShowOnlyMissingChange={onShowOnlyMissingChange}
+            showOnlyRepeated={showOnlyRepeated}
+            onShowOnlyRepeatedChange={onShowOnlyRepeatedChange}
             selectedGroup={selectedGroup}
             onGroupChange={onGroupChange}
             onExportList={(type) => {

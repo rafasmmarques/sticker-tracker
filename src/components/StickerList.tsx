@@ -136,6 +136,7 @@ type StickerListProps = {
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
   showOnlyMissing?: boolean;
+  showOnlyRepeated?: boolean;
 };
 
 export function StickerList({
@@ -144,12 +145,15 @@ export function StickerList({
   onIncreaseQuantity,
   onDecreaseQuantity,
   showOnlyMissing = false,
+  showOnlyRepeated = false,
 }: StickerListProps) {
   return (
     <section className="flex flex-col gap-0.5" aria-label="Lista condensada">
       {stickers.map((sticker) => {
         const quantity = getStickerQuantity(collection, sticker.id);
-        const isHidden = showOnlyMissing && quantity > 0;
+        const isHidden =
+          (showOnlyMissing && quantity > 0) ||
+          (showOnlyRepeated && quantity < 2);
         
         return <StickerRowWithFade 
           key={sticker.id} 
