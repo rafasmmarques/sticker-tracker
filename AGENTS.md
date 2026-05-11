@@ -45,6 +45,23 @@ Use `npm` as the package manager unless the repository is explicitly migrated to
 
 ## Important Commands
 
+### Running Commands From Codex/Windows
+
+This repository lives inside WSL. When using Codex from Windows/PowerShell, do not run `npm` commands directly from the UNC path (`\\wsl.localhost\Ubuntu\home\rafaelmarques\projects\sticker-tracker`), because Windows `cmd.exe` can lose the working directory and call the wrong Node/npm binaries.
+
+Run project commands through WSL from the Linux project path, loading `nvm` first:
+
+```bash
+wsl -e bash -lc "source ~/.nvm/nvm.sh && cd /home/rafaelmarques/projects/sticker-tracker && nvm use --silent && npm run build"
+```
+
+Use the same prefix for other npm scripts:
+
+```bash
+wsl -e bash -lc "source ~/.nvm/nvm.sh && cd /home/rafaelmarques/projects/sticker-tracker && nvm use --silent && npm run lint"
+wsl -e bash -lc "source ~/.nvm/nvm.sh && cd /home/rafaelmarques/projects/sticker-tracker && nvm use --silent && npm run dev"
+```
+
 Install dependencies:
 
 ```bash
