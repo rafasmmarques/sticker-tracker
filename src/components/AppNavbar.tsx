@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { faBars, faGear, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faXmark, faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   signInWithEmail,
   signOut,
@@ -255,7 +255,7 @@ export function AppNavbar({
           isActive={isFiltersOpen}
           activeLabel="Fechar filtros"
           inactiveLabel="Abrir filtros"
-          icon={isFiltersOpen ? faXmark : faGear}
+          icon={isFiltersOpen ? faXmark : faBars}
           onClick={() => toggleDropdown("filters")}
         />
 
@@ -263,7 +263,7 @@ export function AppNavbar({
           isActive={isAuthOpen}
           activeLabel="Fechar menu"
           inactiveLabel="Abrir menu"
-          icon={isAuthOpen ? faXmark : faBars}
+          icon={isAuthOpen ? faXmark : faUser}
           onClick={() => toggleDropdown("auth")}
         />
 
