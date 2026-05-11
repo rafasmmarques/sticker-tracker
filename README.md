@@ -83,15 +83,28 @@ Sem Supabase configurado, o app ainda consegue usar o catalogo fallback em `src/
 
 ## Supabase
 
-As migracoes ficam em `supabase/migrations` e o seed inicial em `supabase/seed.sql`.
+O projeto tem dois caminhos de banco:
+
+- `supabase/setup`: scripts separados e consolidados para criar um banco novo do zero.
+- `supabase/migrations`: historico incremental usado por bancos que ja existem.
+- `supabase/seed.sql`: dados iniciais do catalogo, executado depois do schema.
 
 Para um projeto Supabase novo:
 
 1. Crie o projeto no Supabase.
-2. Rode `supabase/migrations/20260501000000_create_initial_schema.sql`.
-3. Rode `supabase/migrations/20260504000000_add_trade_link.sql`.
+2. Rode os arquivos de `supabase/setup` em ordem, de `01_extensions_and_functions.sql` ate `10_grants.sql`.
+3. Se estiver usando `psql` ou Supabase CLI, voce pode usar `supabase/setup/00_run_all.sql` como runner.
 4. Rode `supabase/seed.sql`.
 5. Copie a URL do projeto e a chave anon para `.env.local`.
+
+Para um banco que ja existe, nao use `supabase/setup`. Aplique apenas as migrations pendentes em `supabase/migrations`.
+
+O seed inicial cria:
+
+- album `world-cup-2026`;
+- tipos de figurinhas, incluindo `partner_extra`;
+- grupos `FWC`, `PAN`, `CC` e grupos das selecoes;
+- catalogo normalizado, incluindo Coca-Cola `981..994` e Panini `995`.
 
 Tabelas principais:
 

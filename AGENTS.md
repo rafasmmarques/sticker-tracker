@@ -45,6 +45,14 @@ Use `npm` as the package manager unless the repository is explicitly migrated to
 
 ## Important Commands
 
+### Local Environment Notes
+
+Run commands from the repository root.
+
+If you are using Windows with WSL, prefer running `npm` commands inside WSL from the Linux filesystem path of your local clone. Avoid running project scripts from a UNC path because Windows shells can resolve the wrong Node/npm binaries.
+
+If a non-versioned `AGENTS.local.md` exists, read it for machine-specific command prefixes, local paths, or runtime setup notes.
+
 Install dependencies:
 
 ```bash
