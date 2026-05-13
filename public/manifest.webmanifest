@@ -1,0 +1,29 @@
+{
+  "name": "Minha Coleção 2026",
+  "short_name": "Minha Coleção",
+  "description": "Controle seu álbum de figurinhas da Copa 2026, marque faltantes e repetidas, compare trocas e compartilhe sua lista.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f5ef",
+  "theme_color": "#171b5f",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ]
+}

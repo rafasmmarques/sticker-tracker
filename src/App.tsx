@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { Routes, Route } from "react-router";
+import { Routes, Route, useLocation } from "react-router";
 import { AppHero } from "./components/AppHero";
 import { AppNavbar } from "./components/AppNavbar";
 import { BackToTopButton } from "./components/BackToTopButton";
 import { AlbumCompletedDialog } from "./components/AlbumCompletedDialog";
 import { CollectionStats } from "./components/CollectionStats";
 import { CollectionToolbar } from "./components/CollectionToolbar";
+import { HowItWorks } from "./components/HowItWorks";
 import { StickerGrid } from "./components/StickerGrid";
 import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
@@ -17,6 +18,8 @@ import { useStickerCatalog } from "./hooks/useStickerCatalog";
 import { useStickerCollection } from "./hooks/useStickerCollection";
 import { useCollectionCelebration } from "./hooks/useCollectionCelebration";
 import { useMediaQuery } from "./hooks/useMediaQuery";
+import { usePageSeo } from "./hooks/usePageSeo";
+import { SEO } from "./constants/seo";
 import { DEVELOPER_NAME, SUPPORT_PIX_KEY } from "./constants/support";
 import {
   applyStickerTradeToCollection,
@@ -30,6 +33,7 @@ import {
 import "./index.css";
 
 function App() {
+  const location = useLocation();
   const [search, setSearch] = useState("");
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
   const [showOnlyRepeated, setShowOnlyRepeated] = useState(false);
@@ -44,6 +48,31 @@ function App() {
   const completionStickers = useMemo(() => {
     return getCompletionStickers(stickers);
   }, [stickers]);
+  const isPublicTradePage = location.pathname.startsWith("/trocas/");
+  const tradeUsername = isPublicTradePage
+    ? decodeURIComponent(
+        location.pathname.replace(/^\/trocas\//, "").split("/")[0] ?? ""
+      )
+    : "";
+
+  usePageSeo(
+    isPublicTradePage
+      ? {
+          title: tradeUsername
+            ? `Coleção de @${tradeUsername} para trocas | Minha Coleção 2026`
+            : `Trocas | ${SEO.siteName}`,
+          description:
+            "Página pública de trocas do Minha Coleção 2026. Acesse pelo link compartilhado para ver faltantes e repetidas.",
+          canonicalPath: "/",
+          robots: "noindex, follow",
+        }
+      : {
+          title: SEO.defaultTitle,
+          description: SEO.defaultDescription,
+          canonicalPath: "/",
+          robots: "index, follow",
+        }
+  );
 
   const {
     collection,
@@ -246,6 +275,8 @@ function App() {
                 isSavingCollection={isSyncing}
                 onOpenMarkAllDialog={() => setShowMarkAllDialog(true)}
               />
+
+              <HowItWorks />
 
               <CollectionStats summary={summary} />
 

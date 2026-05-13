@@ -15,6 +15,14 @@
         align-items: stretch;
         flex-direction: column;
     }
+
+    .how-it-works__steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .app-footer__faq-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 640px) {
@@ -63,6 +71,24 @@
 
     .app-hero__actions {
         flex-direction: column;
+    }
+
+    .how-it-works {
+        margin-bottom: 16px;
+    }
+
+    .how-it-works__dropdown {
+        padding: 14px;
+    }
+
+    .how-it-works__steps {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .how-it-works__steps li {
+        min-height: auto;
+        padding: 10px;
     }
 
     .primary-link,
@@ -122,6 +148,15 @@
     .back-to-top-button {
         right: 12px;
         bottom: 12px;
+    }
+
+    .app-footer {
+        margin-top: 32px;
+        padding-bottom: 24px;
+    }
+
+    .app-footer__faq-grid {
+        grid-template-columns: 1fr;
     }
 }
 
