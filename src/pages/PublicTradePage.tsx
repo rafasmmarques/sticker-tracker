@@ -187,7 +187,7 @@ export function PublicTradePage({
     <div className="trade-page">
       <header className="trade-page__header">
         <Link to="/" className="trade-page__logo">
-          Sticker Tracker
+          Minha Coleção 2026
         </Link>
 
         <div className="trade-page__user">

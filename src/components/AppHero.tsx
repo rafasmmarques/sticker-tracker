@@ -14,7 +14,7 @@ export function AppHero({
       <div className="app-hero__content">
         <span className="eyebrow">Coleção 2026</span>
 
-        <h1>Sticker Tracker</h1>
+        <h1>Minha Coleção 2026</h1>
 
         <p>
           Organize sua coleção, acompanhe o que falta e descubra rapidamente

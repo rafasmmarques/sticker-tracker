@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 .env.local
 AGENTS.local.md
+.codex/
 
 # wrangler files
 .wrangler
