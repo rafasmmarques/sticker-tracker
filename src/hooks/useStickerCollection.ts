@@ -12,57 +12,137 @@ import {
 
 type SaveCollectionResult = "local" | "cloud";
 
-function getStoredCollection(): StickerCollection {
+type StoredCollection = {
+  collection: StickerCollection;
+  updatedAt: string | null;
+};
+
+type StoredCollectionPayload = {
+  collection: StickerCollection;
+  updatedAt?: string | null;
+};
+
+function getStoredCollection(): StoredCollection {
   const storedCollection = localStorage.getItem(COLLECTION_STORAGE_KEY);
 
   if (!storedCollection) {
-    return {};
+    return {
+      collection: {},
+      updatedAt: null,
+    };
   }
 
   try {
-    return JSON.parse(storedCollection) as StickerCollection;
+    const parsed = JSON.parse(storedCollection) as
+      | StickerCollection
+      | StoredCollectionPayload;
+
+    if (isStoredCollectionPayload(parsed)) {
+      return {
+        collection: parsed.collection,
+        updatedAt: parsed.updatedAt ?? null,
+      };
+    }
+
+    return {
+      collection: parsed as StickerCollection,
+      updatedAt: null,
+    };
   } catch {
-    return {};
+    return {
+      collection: {},
+      updatedAt: null,
+    };
   }
 }
 
-function mergeCollections(
-  localCollection: StickerCollection,
-  remoteCollection: StickerCollection
-): StickerCollection {
-  const stickerIds = new Set([
-    ...Object.keys(localCollection),
-    ...Object.keys(remoteCollection),
-  ]);
-
-  return Array.from(stickerIds).reduce<StickerCollection>(
-    (collection, stickerId) => {
-      const id = Number(stickerId);
-      const quantity = Math.max(
-        localCollection[id] ?? 0,
-        remoteCollection[id] ?? 0
-      );
-
-      if (quantity > 0) {
-        collection[id] = quantity;
-      }
-
-      return collection;
-    },
-    {}
+function isStoredCollectionPayload(
+  value: StickerCollection | StoredCollectionPayload
+): value is StoredCollectionPayload {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "collection" in value &&
+    typeof value.collection === "object" &&
+    value.collection !== null
   );
 }
 
+function setStoredCollection({
+  collection,
+  updatedAt,
+}: StoredCollection): void {
+  localStorage.setItem(
+    COLLECTION_STORAGE_KEY,
+    JSON.stringify({
+      collection,
+      updatedAt,
+    })
+  );
+}
+
+function isRemoteCollectionNewer(
+  localUpdatedAt: string | null,
+  remoteUpdatedAt: string | null
+): boolean {
+  const remoteTime = parseTimestamp(remoteUpdatedAt);
+
+  if (remoteTime === null) {
+    return false;
+  }
+
+  const localTime = parseTimestamp(localUpdatedAt);
+
+  if (localTime === null) {
+    return true;
+  }
+
+  return remoteTime >= localTime;
+}
+
+function parseTimestamp(timestamp: string | null): number | null {
+  if (!timestamp) {
+    return null;
+  }
+
+  const time = Date.parse(timestamp);
+
+  return Number.isNaN(time) ? null : time;
+}
+
 export function useStickerCollection(userId?: string) {
-  const [collection, setCollection] =
-    useState<StickerCollection>(getStoredCollection);
+  const [initialStoredCollection] =
+    useState<StoredCollection>(getStoredCollection);
+  const [collection, setCollection] = useState<StickerCollection>(
+    initialStoredCollection.collection
+  );
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
+  const localUpdatedAtRef = useRef<string | null>(
+    initialStoredCollection.updatedAt
+  );
+  const nextStorageUpdatedAtRef = useRef<string | null | undefined>(undefined);
+  const skipNextCloudSyncRef = useRef(false);
+  const hasMountedRef = useRef(false);
   const syncedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(collection));
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    const nextUpdatedAt =
+      nextStorageUpdatedAtRef.current ?? new Date().toISOString();
+
+    nextStorageUpdatedAtRef.current = undefined;
+    localUpdatedAtRef.current = nextUpdatedAt;
+
+    setStoredCollection({
+      collection,
+      updatedAt: nextUpdatedAt,
+    });
   }, [collection]);
 
   useEffect(() => {
@@ -83,17 +163,36 @@ export function useStickerCollection(userId?: string) {
 
         const localCollection = getStoredCollection();
         const remoteCollection = await fetchUserStickerCollection(userId);
-        const mergedCollection = mergeCollections(
-          localCollection,
-          remoteCollection
+        const shouldUseRemoteCollection = isRemoteCollectionNewer(
+          localCollection.updatedAt,
+          remoteCollection.updatedAt
         );
 
         if (!isMounted) {
           return;
         }
 
-        setCollection(mergedCollection);
-        await syncUserStickerCollection(userId, mergedCollection);
+        if (shouldUseRemoteCollection) {
+          nextStorageUpdatedAtRef.current = remoteCollection.updatedAt;
+          skipNextCloudSyncRef.current = true;
+          setCollection(remoteCollection.collection);
+          syncedUserIdRef.current = userId;
+          return;
+        }
+
+        nextStorageUpdatedAtRef.current = localCollection.updatedAt;
+        skipNextCloudSyncRef.current = true;
+        setCollection(localCollection.collection);
+        const updatedAt = await syncUserStickerCollection(
+          userId,
+          localCollection.collection
+        );
+
+        localUpdatedAtRef.current = updatedAt;
+        setStoredCollection({
+          collection: localCollection.collection,
+          updatedAt,
+        });
 
         syncedUserIdRef.current = userId;
       } catch (error) {
@@ -123,12 +222,22 @@ export function useStickerCollection(userId?: string) {
       return;
     }
 
+    if (skipNextCloudSyncRef.current) {
+      skipNextCloudSyncRef.current = false;
+      return;
+    }
+
     const timeout = window.setTimeout(async () => {
       if (!userId) return;
 
       try {
         setSyncError(null);
-        await syncUserStickerCollection(userId, collection);
+        const updatedAt = await syncUserStickerCollection(userId, collection);
+        localUpdatedAtRef.current = updatedAt;
+        setStoredCollection({
+          collection,
+          updatedAt,
+        });
       } catch (error) {
         console.error(error);
         setSyncError(
@@ -235,7 +344,12 @@ export function useStickerCollection(userId?: string) {
   }
 
   async function saveCollection(): Promise<SaveCollectionResult> {
-    localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(collection));
+    const updatedAt = new Date().toISOString();
+    localUpdatedAtRef.current = updatedAt;
+    setStoredCollection({
+      collection,
+      updatedAt,
+    });
 
     if (!userId) {
       return "local";
@@ -245,7 +359,12 @@ export function useStickerCollection(userId?: string) {
       setIsSyncing(true);
       setSyncError(null);
 
-      await syncUserStickerCollection(userId, collection);
+      const syncedAt = await syncUserStickerCollection(userId, collection);
+      localUpdatedAtRef.current = syncedAt;
+      setStoredCollection({
+        collection,
+        updatedAt: syncedAt,
+      });
 
       syncedUserIdRef.current = userId;
 

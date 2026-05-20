@@ -6,9 +6,18 @@ type UserStickerRow = {
   quantity: number;
 };
 
+type CollectionProfileRow = {
+  collection_updated_at: string | null;
+};
+
+export type SyncedStickerCollection = {
+  collection: StickerCollection;
+  updatedAt: string | null;
+};
+
 export async function fetchUserStickerCollection(
   userId: string
-): Promise<StickerCollection> {
+): Promise<SyncedStickerCollection> {
   const { data, error } = await supabase
     .from("user_stickers")
     .select("sticker_id, quantity")
@@ -18,7 +27,17 @@ export async function fetchUserStickerCollection(
     throw error;
   }
 
-  return (data ?? []).reduce<StickerCollection>(
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("collection_updated_at")
+    .eq("id", userId)
+    .single();
+
+  if (profileError) {
+    throw profileError;
+  }
+
+  const collection = (data ?? []).reduce<StickerCollection>(
     (collection, row: UserStickerRow) => {
       collection[row.sticker_id] = row.quantity;
 
@@ -26,12 +45,19 @@ export async function fetchUserStickerCollection(
     },
     {}
   );
+
+  return {
+    collection,
+    updatedAt:
+      (profileData as CollectionProfileRow | null)?.collection_updated_at ??
+      null,
+  };
 }
 
 export async function syncUserStickerCollection(
   userId: string,
   collection: StickerCollection
-): Promise<void> {
+): Promise<string> {
   const rows = Object.entries(collection)
     .map(([stickerId, quantity]) => ({
       user_id: userId,
@@ -67,17 +93,34 @@ export async function syncUserStickerCollection(
     .map((row) => row.sticker_id)
     .filter((stickerId) => !activeStickerIds.has(stickerId));
 
-  if (obsoleteStickerIds.length === 0) {
-    return;
+  if (obsoleteStickerIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("user_stickers")
+      .delete()
+      .eq("user_id", userId)
+      .in("sticker_id", obsoleteStickerIds);
+
+    if (deleteError) {
+      throw deleteError;
+    }
   }
 
-  const { error: deleteError } = await supabase
-    .from("user_stickers")
-    .delete()
-    .eq("user_id", userId)
-    .in("sticker_id", obsoleteStickerIds);
+  return updateCollectionTimestamp(userId);
+}
 
-  if (deleteError) {
-    throw deleteError;
+async function updateCollectionTimestamp(userId: string): Promise<string> {
+  const updatedAt = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      collection_updated_at: updatedAt,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    throw error;
   }
+
+  return updatedAt;
 }
