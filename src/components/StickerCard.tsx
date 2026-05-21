@@ -5,6 +5,7 @@ import { FIFA_TO_ISO } from "../utils/countryCodes";
 type StickerCardProps = {
   sticker: Sticker;
   quantity: number;
+  showRepeatedQuantity?: boolean;
   onIncreaseQuantity: (stickerId: number) => void;
   onDecreaseQuantity: (stickerId: number) => void;
   isHidden?: boolean;
@@ -13,6 +14,7 @@ type StickerCardProps = {
 export function StickerCard({
   sticker,
   quantity,
+  showRepeatedQuantity = false,
   onIncreaseQuantity,
   onDecreaseQuantity,
   isHidden = false,
@@ -39,6 +41,7 @@ export function StickerCard({
   if (!showSticker) return null;
 
   const repeatedQuantity = Math.max(quantity - 1, 0);
+  const displayQuantity = showRepeatedQuantity ? repeatedQuantity : quantity;
   const team = sticker.team;
 
   const fifaCode = team?.fifaCode?.toUpperCase() ?? null;
@@ -131,7 +134,7 @@ export function StickerCard({
           className="inline-flex min-w-9 h-7 items-center justify-center border rounded-full px-2.5 text-sm font-bold text-[var(--color-navy)] bg-white/70"
           aria-label={`Quantidade da figurinha ${sticker.displayCode}`}
         >
-          {quantity}
+          {displayQuantity}
         </div>
 
         <button

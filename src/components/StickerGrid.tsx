@@ -33,6 +33,7 @@ export function StickerGrid({
             key={sticker.id}
             sticker={sticker}
             quantity={quantity}
+            showRepeatedQuantity={showOnlyRepeated}
             onIncreaseQuantity={onIncreaseQuantity}
             onDecreaseQuantity={onDecreaseQuantity}
             isHidden={

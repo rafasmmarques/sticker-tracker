@@ -159,6 +159,7 @@ export function StickerList({
           key={sticker.id} 
           sticker={sticker} 
           quantity={quantity}
+          showRepeatedQuantity={showOnlyRepeated}
           isHidden={isHidden}
           team={sticker.team}
           onIncreaseQuantity={onIncreaseQuantity}
@@ -172,6 +173,7 @@ export function StickerList({
 type StickerRowWithFadeProps = {
   sticker: Sticker;
   quantity: number;
+  showRepeatedQuantity: boolean;
   isHidden: boolean;
   team?: Sticker["team"];
   onIncreaseQuantity: (stickerId: number) => void;
@@ -181,6 +183,7 @@ type StickerRowWithFadeProps = {
 function StickerRowWithFade({
   sticker,
   quantity,
+  showRepeatedQuantity,
   isHidden,
   team,
   onIncreaseQuantity,
@@ -207,6 +210,8 @@ function StickerRowWithFade({
 
   if (!showRow) return null;
 
+  const repeatedQuantity = Math.max(quantity - 1, 0);
+  const displayQuantity = showRepeatedQuantity ? repeatedQuantity : quantity;
   const fifaCode = team?.fifaCode?.toUpperCase() ?? null;
   const isoCode = fifaCode ? FIFA_TO_ISO[fifaCode]?.toLowerCase() : null;
   const flagCode = isoCode ?? team?.countryCode?.toLowerCase() ?? null;
@@ -247,7 +252,7 @@ function StickerRowWithFade({
 
   return (
     <div className={rowClasses} style={bgStyle}>
-      <div className="min-w-8 h-7 flex items-center justify-center rounded-md bg-white/70 text-sm font-extrabold text-[var(--color-navy)]">{quantity}</div>
+      <div className="min-w-8 h-7 flex items-center justify-center rounded-md bg-white/70 text-sm font-extrabold text-[var(--color-navy)]">{displayQuantity}</div>
 
       <div className="flex-1 flex items-center gap-2 min-w-0">
         {flagCode && (

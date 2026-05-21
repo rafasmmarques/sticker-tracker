@@ -3,6 +3,7 @@ create table public.profiles (
   username text unique,
   display_name text,
   link_ativo boolean not null default false,
+  collection_updated_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
