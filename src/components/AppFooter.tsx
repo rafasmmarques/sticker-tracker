@@ -17,7 +17,13 @@ const faqItems = [
   },
   {
     question: "Funciona no celular?",
-    answer: "Sim. O Minha Coleção 2026 foi pensado para uso rápido no celular.",
+    answer:
+      "Sim. O Minha Coleção 2026 foi pensado para uso rápido no celular, inclusive com scanner de figurinhas pela câmera.",
+  },
+  {
+    question: "Como funciona o scanner?",
+    answer:
+      "Abra a opção Escanear, permita o acesso à câmera e posicione o código da figurinha no guia. O app identifica o código e atualiza sua coleção conforme o modo escolhido.",
   },
   {
     question: "Posso compartilhar minha lista?",
