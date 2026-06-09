@@ -1,3 +1,7 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router";
+
 type AppHeroProps = {
   onSaveCollection: () => Promise<void>;
   isSavingCollection: boolean;
@@ -22,8 +26,13 @@ export function AppHero({
         </p>
 
         <div className="app-hero__actions">
+          <Link className="primary-link gap-2" to="/escanear">
+            <FontAwesomeIcon icon={faCamera} />
+            <span>Escanear</span>
+          </Link>
+
           <button
-            className="primary-link"
+            className="ghost-button"
             type="button"
             onClick={onOpenMarkAllDialog}
           >

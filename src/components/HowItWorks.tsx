@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 const steps = [
-  "Marque as figurinhas que você já tem.",
+  "Marque manualmente ou escaneie as figurinhas que você já tem.",
   "Veja o que falta para completar.",
-  "Controle suas repetidas.",
+  "Controle suas repetidas e dê baixa durante as trocas.",
   "Compartilhe seu link de trocas.",
   "Compare com amigos.",
 ];

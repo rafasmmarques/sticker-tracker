@@ -11,6 +11,7 @@ import { StickerGrid } from "./components/StickerGrid";
 import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
+import { ScannerPage } from "./pages/ScannerPage";
 import { TradeLinkSearch } from "./components/trade/TradeLinkSearch";
 import { showToast } from "./utils/toast";
 import { useAuth } from "./hooks/useAuth";
@@ -239,6 +240,17 @@ function App() {
   return (
     <>
       <Routes>
+        <Route
+          path="/escanear"
+          element={
+            <ScannerPage
+              stickers={stickers}
+              collection={collection}
+              increaseStickerQuantity={handleIncreaseStickerQuantity}
+              decreaseStickerQuantity={decreaseStickerQuantity}
+            />
+          }
+        />
         <Route
           path="/trocas/:username"
           element={
