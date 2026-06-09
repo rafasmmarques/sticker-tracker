@@ -11,6 +11,7 @@ Sticker Tracker e um app mobile-first para acompanhar colecoes de figurinhas. El
 ## Principais Recursos
 
 - Marcar figurinhas que voce tem, incluindo repetidas.
+- Escanear o codigo da figurinha com a camera do celular.
 - Ver progresso, faltantes, repetidas e percentual da colecao.
 - Buscar por codigo, selecao ou jogador.
 - Filtrar por faltantes, especiais e selecoes.
@@ -23,6 +24,7 @@ Sticker Tracker e um app mobile-first para acompanhar colecoes de figurinhas. El
 - Criar link publico de trocas em `/trocas/:username`.
 - Comparar colecoes e gerar sugestao de troca.
 - Confirmar uma troca para atualizar a colecao local.
+- Usar input manual como fallback quando a camera nao estiver disponivel.
 
 ## Stack
 
@@ -31,6 +33,8 @@ Sticker Tracker e um app mobile-first para acompanhar colecoes de figurinhas. El
 - Vite
 - React Router
 - Supabase
+- Supabase Edge Functions
+- Gemini API
 - CSS organizado por responsabilidade em `src/styles`
 - Wrangler/Cloudflare Workers para preview e deploy
 
@@ -41,6 +45,7 @@ Requisitos:
 - Node.js 18 ou superior
 - npm
 - Uma instancia Supabase, caso queira usar catalogo online, login e sincronizacao
+- Uma chave Gemini API, caso queira usar o scanner por camera
 
 Instale as dependencias:
 
@@ -71,6 +76,8 @@ Abra `http://localhost:5173`.
 
 Sem Supabase configurado, o app ainda consegue usar o catalogo fallback em `src/data/stickers.ts` e salvar a colecao no navegador.
 
+Para usar a camera em desenvolvimento no celular, o app precisa rodar em uma origem segura. Em producao, HTTPS ja atende esse requisito. Em testes locais usando IP da rede, pode ser necessario configurar o navegador para tratar a origem local como segura.
+
 ## Scripts
 
 | Comando | Descricao |
@@ -98,6 +105,34 @@ Para um projeto Supabase novo:
 5. Copie a URL do projeto e a chave anon para `.env.local`.
 
 Para um banco que ja existe, nao use `supabase/setup`. Aplique apenas as migrations pendentes em `supabase/migrations`.
+
+### Edge Function do scanner
+
+O scanner usa a Edge Function `analyze-sticker`:
+
+```txt
+supabase/functions/analyze-sticker/index.ts
+```
+
+Ela recebe a imagem capturada no frontend, chama a Gemini API no ambiente seguro do Supabase e retorna o codigo identificado. A chave da Gemini nao deve ser exposta no frontend.
+
+Configure os secrets no Supabase:
+
+```bash
+npx supabase secrets set GEMINI_API_KEY="sua-chave-gemini"
+```
+
+O modelo padrao e `gemini-3.5-flash`. Se quiser sobrescrever:
+
+```bash
+npx supabase secrets set GEMINI_MODEL="gemini-3.5-flash"
+```
+
+Publique a funcao:
+
+```bash
+npx supabase functions deploy analyze-sticker
+```
 
 O seed inicial cria:
 
@@ -136,6 +171,8 @@ src/
   styles/                  CSS por area/responsabilidade
   types/                   Tipos compartilhados
   utils/                   Funcoes puras de colecao e troca
+supabase/
+  functions/               Edge Functions usadas pelo app
 ```
 
 Separacao principal:
@@ -167,6 +204,14 @@ Usuarios autenticados podem configurar um username e ativar um link publico em:
 
 A pagina publica mostra progresso, faltantes e repetidas da colecao compartilhada. Quando o visitante tambem tem uma colecao carregada, o app pode comparar as duas colecoes e sugerir uma troca com base nas repetidas e faltantes de cada pessoa.
 
+## Scanner de Figurinhas
+
+A rota `/escanear` abre a camera do celular e captura um frame do codigo da figurinha. A imagem e enviada para a Edge Function `analyze-sticker`, que chama a Gemini API e retorna um codigo como `BRA 10` ou `FWC 3`.
+
+O frontend valida o codigo contra o catalogo carregado antes de alterar a colecao. No modo adicionar, a quantidade da figurinha aumenta. No modo dar baixa em repetida, a quantidade so diminui quando o usuario tem mais de uma unidade.
+
+O scanner exige permissao de camera do navegador. Se a camera nao estiver disponivel, o usuario ainda pode digitar o codigo manualmente.
+
 ## Deploy
 
 O projeto inclui `wrangler.jsonc` configurado com `not_found_handling: "single-page-application"`, necessario para rotas como `/trocas/:username` funcionarem em producao.
@@ -187,5 +232,6 @@ npm run preview
 
 - `.env.local` nao deve ser versionado.
 - Use apenas chaves publicas anon/publishable do Supabase no frontend.
+- `GEMINI_API_KEY` deve ficar apenas nos secrets da Supabase Edge Function.
 - O catalogo em `src/data/stickers.ts` e fallback para erro/offline; a fonte principal deve ser a tabela `stickers`.
 - O README nao declara licenca porque nao ha arquivo de licenca no repositorio atualmente.
