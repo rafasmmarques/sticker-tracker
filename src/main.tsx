@@ -7,7 +7,9 @@ import './index.css';
 function renderFatalError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error ? error.stack : null;
-  const isDebugMode = new URLSearchParams(window.location.search).has('debug');
+  const canUseDebugMode = import.meta.env.DEV;
+  const isDebugMode =
+    canUseDebugMode && new URLSearchParams(window.location.search).has('debug');
 
   document.body.innerHTML = `
     <main style="
@@ -68,7 +70,7 @@ function renderFatalError(error: unknown) {
         ">${escapeHtml(isDebugMode ? stack ?? message : message)}</pre>
 
         ${
-          isDebugMode
+          isDebugMode || !canUseDebugMode
             ? ''
             : `<p style="margin: 14px 0 0; color: #667085; font-size: 13px;">
                 Para ver mais detalhes, abra o site com <strong>?debug=1</strong> no final da URL.

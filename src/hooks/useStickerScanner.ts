@@ -76,15 +76,11 @@ export function useStickerScanner({
       const result = await analyzeStickerImage(image);
 
       if (!result.success || !result.stickerCode) {
-        const isApiFailure = Boolean(result.error);
+        const scannerError = getScannerErrorMessage(result.error);
 
         showToast({
-          title: isApiFailure
-            ? "Não foi possível analisar agora."
-            : "Não foi possível ler a figurinha.",
-          description: isApiFailure
-            ? "Aguarde um instante e tente novamente."
-            : "Tente aproximar a câmera do código no verso.",
+          title: scannerError.title,
+          description: scannerError.description,
           variant: "error",
         });
         return;
@@ -204,6 +200,47 @@ export function useStickerScanner({
     lastCode,
     analyzeImage,
     submitManualCode,
+  };
+}
+
+function getScannerErrorMessage(error?: string): {
+  title: string;
+  description: string;
+} {
+  if (error === "Authentication required.") {
+    return {
+      title: "Entre para usar o scanner.",
+      description: "O scanner usa análise em nuvem e precisa de uma conta ativa.",
+    };
+  }
+
+  if (error === "Rate limit exceeded.") {
+    return {
+      title: "Limite do scanner atingido.",
+      description: "Aguarde um pouco antes de analisar novas figurinhas.",
+    };
+  }
+
+  if (
+    error === "Image is too large." ||
+    error === "Valid JPEG or PNG image is required."
+  ) {
+    return {
+      title: "Imagem inválida.",
+      description: "Capture a figurinha novamente e tente outra vez.",
+    };
+  }
+
+  if (error) {
+    return {
+      title: "Não foi possível analisar agora.",
+      description: "Aguarde um instante e tente novamente.",
+    };
+  }
+
+  return {
+    title: "Não foi possível ler a figurinha.",
+    description: "Tente aproximar a câmera do código no verso.",
   };
 }
 

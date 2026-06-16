@@ -4,8 +4,8 @@ export type AnalyzeStickerResponse = {
   success: boolean;
   stickerCode: string | null;
   confidence?: number;
-  rawText?: string;
   error?: string;
+  retryAfterSeconds?: number | null;
 };
 
 export async function analyzeStickerImage(
@@ -21,6 +21,12 @@ export async function analyzeStickerImage(
   );
 
   if (error) {
+    const parsedError = await parseFunctionError(error);
+
+    if (parsedError) {
+      return parsedError;
+    }
+
     throw new Error(error.message);
   }
 
@@ -29,4 +35,39 @@ export async function analyzeStickerImage(
   }
 
   return data;
+}
+
+async function parseFunctionError(
+  error: unknown,
+): Promise<AnalyzeStickerResponse | null> {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("context" in error)
+  ) {
+    return null;
+  }
+
+  const context = (error as { context?: unknown }).context;
+
+  if (!(context instanceof Response)) {
+    return null;
+  }
+
+  try {
+    const parsed = await context.json();
+
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "success" in parsed &&
+      "stickerCode" in parsed
+    ) {
+      return parsed as AnalyzeStickerResponse;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
