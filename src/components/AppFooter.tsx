@@ -1,9 +1,8 @@
-import { SupportPixButton } from "./SupportPixButton";
 import { Link } from "react-router";
+import { KofiButton } from "./KofiButton";
 
 type AppFooterProps = {
   developerName?: string;
-  pixKey?: string;
 };
 
 const faqItems = [
@@ -36,7 +35,7 @@ const faqItems = [
   },
 ];
 
-export function AppFooter({ developerName, pixKey }: AppFooterProps) {
+export function AppFooter({ developerName }: AppFooterProps) {
   return (
     <footer className="app-footer">
       <div className="app-footer__content">
@@ -69,9 +68,7 @@ export function AppFooter({ developerName, pixKey }: AppFooterProps) {
                 <strong>{developerName}</strong>
               </a>
             </p>
-            {pixKey && (
-              <SupportPixButton pixKey={pixKey} />
-            )}
+            <KofiButton />
           </>
         ) : (
           <p>Feito com React + TypeScript</p>
