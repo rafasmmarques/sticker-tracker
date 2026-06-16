@@ -1,4 +1,5 @@
 import { SupportPixButton } from "./SupportPixButton";
+import { Link } from "react-router";
 
 type AppFooterProps = {
   developerName?: string;
@@ -55,6 +56,9 @@ export function AppFooter({ developerName, pixKey }: AppFooterProps) {
 
         {developerName ? (
           <>
+            <nav className="app-footer__links" aria-label="Links do rodapé">
+              <Link to="/privacidade">Privacidade</Link>
+            </nav>
             <p>
               Desenvolvido por{" "}
               <a

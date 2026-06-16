@@ -60,6 +60,26 @@
     font-size: 0.9rem;
 }
 
+.app-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.app-footer__links a {
+    color: var(--color-navy);
+    font-size: 0.9rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.app-footer__links a:hover,
+.app-footer__links a:focus {
+    color: var(--color-blue);
+}
+
 .app-footer__content strong {
     color: var(--color-ink);
     font-weight: 850;

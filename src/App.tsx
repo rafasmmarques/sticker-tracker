@@ -12,6 +12,7 @@ import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
 import { ScannerPage } from "./pages/ScannerPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
 import { TradeLinkSearch } from "./components/trade/TradeLinkSearch";
 import { showToast } from "./utils/toast";
 import { useAuth } from "./hooks/useAuth";
@@ -261,6 +262,7 @@ function App() {
             />
           }
         />
+        <Route path="/privacidade" element={<PrivacyPage />} />
         <Route
           path="*"
           element={
