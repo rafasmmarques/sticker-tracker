@@ -15,3 +15,4 @@
 \ir 08_user_stickers.sql
 \ir 09_rls_policies.sql
 \ir 10_grants.sql
+\ir 11_scanner_rate_limits.sql

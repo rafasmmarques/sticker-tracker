@@ -80,6 +80,10 @@ export function LoggedUserPanel({
             <span>Ativar link de trocas</span>
           </label>
 
+          <p className="text-xs font-semibold leading-relaxed text-slate-500">
+            Ao ativar, seu @nome, resumo da coleção, faltantes e repetidas ficam públicos para quem acessar o link.
+          </p>
+
           <div className="grid grid-cols-2 gap-2">
             <button type="button" className={primaryButtonClass} onClick={onSaveTradeLink} disabled={isLoadingTrade}>
               {isLoadingTrade ? "Salvando..." : "Salvar"}

@@ -6,16 +6,29 @@ type AnalyzeStickerResponse = {
   success: boolean;
   stickerCode: string | null;
   confidence?: number;
-  rawText?: string;
   error?: string;
+  retryAfterSeconds?: number | null;
 };
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+type AuthUser = {
+  id: string;
 };
+
+type RateLimitResult = {
+  allowed: boolean;
+  reason?: string;
+  retryAfterSeconds?: number | null;
+};
+
+const MAX_REQUEST_BODY_BYTES = 3_000_000;
+const MAX_IMAGE_BASE64_BYTES = 2_800_000;
+const SCANNER_RATE_LIMIT_MAX_REQUESTS = 30;
+const SCANNER_RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://minhacolecao.app.br",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
 
 const ANALYZE_STICKER_PROMPT = `You are reading the back of a FIFA World Cup 2026 Panini sticker.
 Look first at the top-right corner of the sticker, where the sticker code is usually printed.
@@ -28,9 +41,23 @@ If you cannot identify it, return:
 { "stickerCode": null, "confidence": 0 }`;
 
 Deno.serve(async (request) => {
+  const origin = request.headers.get("origin");
+
+  if (!isAllowedOrigin(origin)) {
+    return jsonResponse(
+      {
+        success: false,
+        stickerCode: null,
+        error: "Origin not allowed.",
+      },
+      403,
+      origin,
+    );
+  }
+
   if (request.method === "OPTIONS") {
     return new Response("ok", {
-      headers: corsHeaders,
+      headers: getCorsHeaders(origin),
     });
   }
 
@@ -42,6 +69,7 @@ Deno.serve(async (request) => {
         error: "Method not allowed.",
       },
       405,
+      origin,
     );
   }
 
@@ -54,11 +82,82 @@ Deno.serve(async (request) => {
       return jsonResponse({
         success: false,
         stickerCode: null,
-        error: "GEMINI_API_KEY is not configured.",
-      });
+        error: "Service unavailable.",
+      }, 503, origin);
     }
 
-    const body = (await request.json()) as AnalyzeStickerRequest;
+    const token = getBearerToken(request);
+    const user = await getAuthenticatedUser(token);
+
+    if (!user) {
+      return jsonResponse(
+        {
+          success: false,
+          stickerCode: null,
+          error: "Authentication required.",
+        },
+        401,
+        origin,
+      );
+    }
+
+    const rateLimit = await consumeRateLimit(token);
+
+    if (!rateLimit.allowed) {
+      return jsonResponse(
+        {
+          success: false,
+          stickerCode: null,
+          error: "Rate limit exceeded.",
+          retryAfterSeconds: rateLimit.retryAfterSeconds ?? null,
+        },
+        429,
+        origin,
+      );
+    }
+
+    const contentLength = Number(request.headers.get("content-length") ?? 0);
+
+    if (contentLength > MAX_REQUEST_BODY_BYTES) {
+      return jsonResponse(
+        {
+          success: false,
+          stickerCode: null,
+          error: "Image is too large.",
+        },
+        413,
+        origin,
+      );
+    }
+
+    const requestText = await request.text();
+
+    if (requestText.length > MAX_REQUEST_BODY_BYTES) {
+      return jsonResponse(
+        {
+          success: false,
+          stickerCode: null,
+          error: "Image is too large.",
+        },
+        413,
+        origin,
+      );
+    }
+
+    const body = parseRequestBody(requestText);
+
+    if (!body) {
+      return jsonResponse(
+        {
+          success: false,
+          stickerCode: null,
+          error: "Invalid request body.",
+        },
+        400,
+        origin,
+      );
+    }
+
     const image = parseImage(body.image);
 
     if (!image) {
@@ -67,8 +166,8 @@ Deno.serve(async (request) => {
       return jsonResponse({
         success: false,
         stickerCode: null,
-        error: "Image is required.",
-      });
+        error: "Valid JPEG or PNG image is required.",
+      }, 400, origin);
     }
 
     const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash";
@@ -107,16 +206,16 @@ Deno.serve(async (request) => {
       const errorText = await response.text();
 
       console.error("analyze-sticker: Gemini request failed.", {
+        userId: user.id,
         status: response.status,
-        body: errorText,
+        bodyLength: errorText.length,
       });
 
       return jsonResponse({
         success: false,
         stickerCode: null,
-        error: `Gemini request failed: ${response.status}`,
-        rawText: errorText,
-      });
+        error: "Image analysis failed.",
+      }, 502, origin);
     }
 
     const geminiResponse = await response.json();
@@ -128,18 +227,146 @@ Deno.serve(async (request) => {
       success: Boolean(stickerCode),
       stickerCode,
       confidence: parsed.confidence,
-      rawText,
-    });
+    }, 200, origin);
   } catch (error) {
     console.error("analyze-sticker: unexpected error.", error);
 
     return jsonResponse({
       success: false,
       stickerCode: null,
-      error: error instanceof Error ? error.message : "Unexpected error.",
-    });
+      error: "Unexpected error.",
+    }, 500, origin);
   }
 });
+
+function getCorsHeaders(origin: string | null): HeadersInit {
+  return {
+    "Access-Control-Allow-Origin": origin ?? DEFAULT_ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+function parseRequestBody(requestText: string): AnalyzeStickerRequest | null {
+  try {
+    const body = JSON.parse(requestText);
+
+    return isRecord(body) ? body : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAllowedOrigins(): string[] {
+  const configuredOrigins = Deno.env.get("APP_ALLOWED_ORIGINS");
+
+  if (!configuredOrigins) {
+    return DEFAULT_ALLOWED_ORIGINS;
+  }
+
+  return configuredOrigins
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  return getAllowedOrigins().includes(origin);
+}
+
+function getBearerToken(request: Request): string | null {
+  const authorization = request.headers.get("authorization");
+  const match = authorization?.match(/^Bearer\s+(.+)$/i);
+
+  return match?.[1] ?? null;
+}
+
+async function getAuthenticatedUser(token: string | null): Promise<AuthUser | null> {
+  if (!token) {
+    return null;
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      "apikey": supabaseAnonKey,
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const user = await response.json();
+
+  if (!isRecord(user) || typeof user.id !== "string") {
+    return null;
+  }
+
+  return {
+    id: user.id,
+  };
+}
+
+async function consumeRateLimit(token: string | null): Promise<RateLimitResult> {
+  if (!token) {
+    return {
+      allowed: false,
+      reason: "unauthenticated",
+      retryAfterSeconds: null,
+    };
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/rpc/consume_scanner_rate_limit`,
+    {
+      method: "POST",
+      headers: {
+        "apikey": supabaseAnonKey,
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        max_requests: SCANNER_RATE_LIMIT_MAX_REQUESTS,
+        window_seconds: SCANNER_RATE_LIMIT_WINDOW_SECONDS,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Rate limit check failed.");
+  }
+
+  const result = await response.json();
+
+  return isRateLimitResult(result)
+    ? result
+    : {
+        allowed: false,
+        reason: "invalid_rate_limit_response",
+        retryAfterSeconds: null,
+      };
+}
 
 function parseImage(image: string | undefined):
   | {
@@ -155,16 +382,39 @@ function parseImage(image: string | undefined):
   const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,(.+)$/);
 
   if (dataUrlMatch) {
+    const mimeType = dataUrlMatch[1].toLowerCase();
+    const base64 = dataUrlMatch[2];
+
+    if (!isSupportedImageMimeType(mimeType) || !isValidBase64Payload(base64)) {
+      return null;
+    }
+
     return {
-      mimeType: dataUrlMatch[1],
-      base64: dataUrlMatch[2],
+      mimeType,
+      base64,
     };
+  }
+
+  if (!isValidBase64Payload(trimmed)) {
+    return null;
   }
 
   return {
     mimeType: "image/jpeg",
     base64: trimmed,
   };
+}
+
+function isSupportedImageMimeType(mimeType: string): boolean {
+  return mimeType === "image/jpeg" || mimeType === "image/png";
+}
+
+function isValidBase64Payload(base64: string): boolean {
+  if (!base64 || base64.length > MAX_IMAGE_BASE64_BYTES) {
+    return false;
+  }
+
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(base64);
 }
 
 function extractText(response: unknown): string {
@@ -261,11 +511,15 @@ function stripCodeFence(text: string): string {
     .trim();
 }
 
-function jsonResponse(body: AnalyzeStickerResponse, status = 200): Response {
+function jsonResponse(
+  body: AnalyzeStickerResponse,
+  status = 200,
+  origin: string | null = null,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      ...corsHeaders,
+      ...getCorsHeaders(origin),
       "Content-Type": "application/json",
     },
   });
@@ -273,6 +527,18 @@ function jsonResponse(body: AnalyzeStickerResponse, status = 200): Response {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isRateLimitResult(value: unknown): value is RateLimitResult {
+  return (
+    isRecord(value) &&
+    typeof value.allowed === "boolean" &&
+    (
+      value.retryAfterSeconds === undefined ||
+      value.retryAfterSeconds === null ||
+      typeof value.retryAfterSeconds === "number"
+    )
+  );
 }
 
 export {};

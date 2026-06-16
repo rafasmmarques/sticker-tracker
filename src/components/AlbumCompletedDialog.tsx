@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrophy, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { SUPPORT_PIX_KEY } from "../constants/support";
-import { SupportPixButton } from "./SupportPixButton";
 
 type AlbumCompletedDialogProps = {
   isOpen: boolean;
@@ -71,10 +69,6 @@ export function AlbumCompletedDialog({
           Você marcou todas as figurinhas do álbum. Agora é só comemorar e
           mostrar essa conquista para a galera.
         </p>
-        <SupportPixButton
-          pixKey={SUPPORT_PIX_KEY}
-          className="app-footer__pix album-completed-dialog__support-button"
-        />
 
         <div className="album-completed-dialog__actions">
           <button

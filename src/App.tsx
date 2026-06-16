@@ -12,6 +12,7 @@ import { StickerList } from "./components/StickerList";
 import { AppFooter } from "./components/AppFooter";
 import { PublicTradePage } from "./pages/PublicTradePage";
 import { ScannerPage } from "./pages/ScannerPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
 import { TradeLinkSearch } from "./components/trade/TradeLinkSearch";
 import { showToast } from "./utils/toast";
 import { useAuth } from "./hooks/useAuth";
@@ -21,7 +22,7 @@ import { useCollectionCelebration } from "./hooks/useCollectionCelebration";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { usePageSeo } from "./hooks/usePageSeo";
 import { SEO } from "./constants/seo";
-import { DEVELOPER_NAME, SUPPORT_PIX_KEY } from "./constants/support";
+import { DEVELOPER_NAME } from "./constants/support";
 import {
   applyStickerTradeToCollection,
   calculateCollectionSummary,
@@ -261,6 +262,7 @@ function App() {
             />
           }
         />
+        <Route path="/privacidade" element={<PrivacyPage />} />
         <Route
           path="*"
           element={
@@ -328,10 +330,7 @@ function App() {
 
               <BackToTopButton />
 
-              <AppFooter
-                developerName={DEVELOPER_NAME}
-                pixKey={SUPPORT_PIX_KEY}
-              />
+              <AppFooter developerName={DEVELOPER_NAME} />
             </main>
           }
         />
