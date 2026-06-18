@@ -1,5 +1,5 @@
 insert into public.albums (slug, name, year, total_stickers)
-values ('world-cup-2026', 'World Cup 2026', 2026, 981)
+values ('world-cup-2026', 'World Cup 2026', 2026, 995)
 on conflict (slug) do update
 set
   name = excluded.name,

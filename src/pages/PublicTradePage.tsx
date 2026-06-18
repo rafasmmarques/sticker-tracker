@@ -90,15 +90,11 @@ export function PublicTradePage({
   const displayError = error ?? initialError;
 
   const summary = useMemo(() => {
-    if (!completionStickers.length || !publicCollection) {
+    if (!stickers.length || !publicCollection) {
       return null;
     }
-    return calculateCollectionSummary(
-      completionStickers,
-      publicCollection,
-      completionStickers.length
-    );
-  }, [completionStickers, publicCollection]);
+    return calculateCollectionSummary(stickers, publicCollection);
+  }, [stickers, publicCollection]);
 
   const missingStickers = useMemo(() => {
     if (!completionStickers.length || !publicCollection) {

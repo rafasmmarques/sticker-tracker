@@ -8,9 +8,19 @@ import type { StickerCollection } from "../types/sticker";
 import {
   applyStickerTradeToCollection,
   increaseCollectionQuantity,
+  normalizeStickerCode,
+  parseImportedStickerCodes,
 } from "../utils/collection";
 
 type SaveCollectionResult = "local" | "cloud";
+
+export type ImportCollectionResult = {
+  applied: boolean;
+  ignoredCount: number;
+  markedAll?: boolean;
+  matchedCount: number;
+  parsedCount: number;
+};
 
 type StoredCollection = {
   collection: StickerCollection;
@@ -291,10 +301,21 @@ export function useStickerCollection(userId?: string) {
   }
 
   function importMissingList(
-    missingCodes: string[],
+    importText: string,
     stickerCodes: Map<number, string>
-  ) {
+  ): ImportCollectionResult {
+    const missingCodes = parseImportedStickerCodes(importText);
+
     if (missingCodes.length === 0) {
+      if (importText.trim().length > 0) {
+        return {
+          applied: false,
+          ignoredCount: 0,
+          matchedCount: 0,
+          parsedCount: 0,
+        };
+      }
+
       setCollection((current) => {
         const updated = { ...current };
         stickerCodes.forEach((_, id) => {
@@ -304,43 +325,67 @@ export function useStickerCollection(userId?: string) {
         });
         return updated;
       });
-      return;
+
+      return {
+        applied: true,
+        ignoredCount: 0,
+        markedAll: true,
+        matchedCount: stickerCodes.size,
+        parsedCount: 0,
+      };
     }
 
-    const normalizedMissing = new Set(
-      missingCodes.map((c) => c.toUpperCase().replace(/[- ]/g, ""))
-    );
+    const importMatch = getImportStickerMatch(missingCodes, stickerCodes);
+
+    if (importMatch.matchedIds.size === 0) {
+      return importMatch.result;
+    }
 
     setCollection((current) => {
       const updated = { ...current };
-      stickerCodes.forEach((code, id) => {
-        const normalizedCode = code.toUpperCase().replace(/[- ]/g, "");
-        if (!normalizedMissing.has(normalizedCode) && !updated[id]) {
+      stickerCodes.forEach((_, id) => {
+        if (!importMatch.matchedIds.has(id) && !updated[id]) {
           updated[id] = 1;
         }
       });
       return updated;
     });
+
+    return importMatch.result;
   }
 
   function importRepeatedList(
-    repeatedCodes: string[],
+    importText: string,
     stickerCodes: Map<number, string>
-  ) {
-    const normalizedRepeated = new Set(
-      repeatedCodes.map((c) => c.toUpperCase().replace(/[- ]/g, ""))
-    );
+  ): ImportCollectionResult {
+    const repeatedCodes = parseImportedStickerCodes(importText);
+
+    if (repeatedCodes.length === 0) {
+      return {
+        applied: false,
+        ignoredCount: 0,
+        matchedCount: 0,
+        parsedCount: 0,
+      };
+    }
+
+    const importMatch = getImportStickerMatch(repeatedCodes, stickerCodes);
+
+    if (importMatch.matchedIds.size === 0) {
+      return importMatch.result;
+    }
 
     setCollection((current) => {
       const updated = { ...current };
-      stickerCodes.forEach((code, id) => {
-        const normalizedCode = code.toUpperCase().replace(/[- ]/g, "");
-        if (normalizedRepeated.has(normalizedCode)) {
-          updated[id] = (updated[id] ?? 0) + 1;
+      importMatch.matchedIds.forEach((id) => {
+        if ((updated[id] ?? 0) < 2) {
+          updated[id] = 2;
         }
       });
       return updated;
     });
+
+    return importMatch.result;
   }
 
   async function saveCollection(): Promise<SaveCollectionResult> {
@@ -404,5 +449,31 @@ export function useStickerCollection(userId?: string) {
     importMissingList,
     importRepeatedList,
     applyTrade,
+  };
+}
+
+function getImportStickerMatch(
+  importedCodes: string[],
+  stickerCodes: Map<number, string>
+): { matchedIds: Set<number>; result: ImportCollectionResult } {
+  const normalizedImportedCodes = new Set(
+    importedCodes.map((code) => normalizeStickerCode(code))
+  );
+  const matchedIds = new Set<number>();
+
+  stickerCodes.forEach((code, id) => {
+    if (normalizedImportedCodes.has(normalizeStickerCode(code))) {
+      matchedIds.add(id);
+    }
+  });
+
+  return {
+    matchedIds,
+    result: {
+      applied: matchedIds.size > 0,
+      ignoredCount: Math.max(normalizedImportedCodes.size - matchedIds.size, 0),
+      matchedCount: matchedIds.size,
+      parsedCount: normalizedImportedCodes.size,
+    },
   };
 }

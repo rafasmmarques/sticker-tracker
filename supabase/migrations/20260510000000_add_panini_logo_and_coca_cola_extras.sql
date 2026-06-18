@@ -21,7 +21,7 @@ add constraint stickers_number_in_group_check check (number_in_group >= 0);
 
 update public.albums
 set
-  total_stickers = 981,
+  total_stickers = 995,
   updated_at = now()
 where slug = 'world-cup-2026';
 

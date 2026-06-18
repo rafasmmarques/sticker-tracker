@@ -10,6 +10,42 @@ export type CompletedSelection = {
   name: string;
 };
 
+export function parseImportedStickerCodes(importText: string): string[] {
+  const codes = new Set<string>();
+  const lines = importText
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    const cleanLine = stripImportListPrefix(line);
+    const groupedMatch = cleanLine.match(/^([a-z0-9]{2,4})\s*:\s*(.+)$/i);
+
+    if (groupedMatch) {
+      const [, groupCode, numberList] = groupedMatch;
+      const stickerNumbers = numberList.match(/\d{1,3}/g) ?? [];
+
+      for (const stickerNumber of stickerNumbers) {
+        codes.add(`${groupCode.toUpperCase()} ${Number(stickerNumber)}`);
+      }
+
+      continue;
+    }
+
+    for (const match of cleanLine.matchAll(/\b([a-z]{2,4})\s*-?\s*(\d{1,3})\b/gi)) {
+      const [, groupCode, stickerNumber] = match;
+      codes.add(`${groupCode.toUpperCase()} ${Number(stickerNumber)}`);
+    }
+  }
+
+  return Array.from(codes);
+}
+
+export function normalizeStickerCode(value: string): string {
+  return value.toUpperCase().replace(/[-\s]/g, "");
+}
+
 export function filterStickersByCode(
   stickers: Sticker[],
   search: string,
@@ -71,9 +107,13 @@ export function getRepeatedStickers(
 export function calculateCollectionSummary(
   stickers: Sticker[],
   collection: StickerCollection,
-  totalStickers: number,
 ): CollectionSummary {
   const completionStickers = getCompletionStickers(stickers);
+  const totalStickers = stickers.length;
+  const totalCompletionStickers = completionStickers.length;
+  const totalOwnedCount = stickers.filter(
+    (sticker) => getStickerQuantity(collection, sticker.id) > 0,
+  ).length;
   const ownedCount = completionStickers.filter(
     (sticker) => getStickerQuantity(collection, sticker.id) > 0,
   ).length;
@@ -82,15 +122,19 @@ export function calculateCollectionSummary(
     return total + Math.max(getStickerQuantity(collection, sticker.id) - 1, 0);
   }, 0);
 
-  const missingCount = Math.max(totalStickers - ownedCount, 0);
+  const missingCount = Math.max(totalCompletionStickers - ownedCount, 0);
   const completionPercentage =
-    totalStickers > 0 ? Math.floor((ownedCount / totalStickers) * 100) : 0;
+    totalCompletionStickers > 0
+      ? Math.floor((ownedCount / totalCompletionStickers) * 100)
+      : 0;
 
   return {
     ownedCount,
     missingCount,
     repeatedCount,
     completionPercentage,
+    totalOwnedCount,
+    totalStickers,
   };
 }
 
@@ -220,6 +264,13 @@ export function getCompletionStickers(stickers: Sticker[]): Sticker[] {
 
 function getSelectionKey(team: StickerTeam): string {
   return String(team.id ?? team.albumCode ?? team.fifaCode ?? team.slug);
+}
+
+function stripImportListPrefix(line: string): string {
+  return line.replace(
+    /^figurinhas\s+(?:que\s+faltam|repetidas)\s+na\s+minha\s+cole[cç][aã]o\s*:\s*/i,
+    "",
+  );
 }
 
 function normalizeSearch(value: string): string {

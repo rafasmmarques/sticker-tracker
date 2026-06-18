@@ -113,12 +113,12 @@ function App() {
     [stickers]
   );
 
-  const handleImportMissingList = (missingCodes: string[]) => {
-    importMissingList(missingCodes, completionStickerCodeMap);
+  const handleImportMissingList = (importText: string) => {
+    return importMissingList(importText, completionStickerCodeMap);
   };
 
-  const handleImportRepeatedList = (repeatedCodes: string[]) => {
-    importRepeatedList(repeatedCodes, stickerCodeMap);
+  const handleImportRepeatedList = (importText: string) => {
+    return importRepeatedList(importText, stickerCodeMap);
   };
 
   const handleIncreaseStickerQuantity = (stickerId: number) => {
@@ -175,12 +175,8 @@ function App() {
   }, [stickers, collection]);
 
   const summary = useMemo(() => {
-    return calculateCollectionSummary(
-      completionStickers,
-      collection,
-      completionStickers.length
-    );
-  }, [completionStickers, collection]);
+    return calculateCollectionSummary(stickers, collection);
+  }, [stickers, collection]);
 
   async function handleSaveCollection() {
     try {

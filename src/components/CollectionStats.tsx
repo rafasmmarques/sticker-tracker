@@ -16,7 +16,9 @@ export function CollectionStats({ summary }: CollectionStatsProps) {
             style={{ width: `${summary.completionPercentage}%` }}
           />
         </div>
-        <small>{summary.ownedCount} figurinhas marcadas</small>
+        <small>
+          {summary.totalOwnedCount} de {summary.totalStickers} figurinhas marcadas
+        </small>
       </article>
 
       <article className="stat-card">
