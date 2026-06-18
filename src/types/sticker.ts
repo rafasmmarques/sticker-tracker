@@ -54,6 +54,8 @@ export type CollectionSummary = {
   missingCount: number;
   repeatedCount: number;
   completionPercentage: number;
+  totalOwnedCount: number;
+  totalStickers: number;
 };
 
 export type Profile = {

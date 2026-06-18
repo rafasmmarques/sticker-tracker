@@ -445,7 +445,7 @@ export const TEAM_GROUPS: TeamSeed[] = [
   },
 ];
 
-export const TOTAL_STICKERS = 981;
+export const TOTAL_STICKERS = 995;
 
 export const stickers: Sticker[] = [
   createPaniniLogoSticker(),

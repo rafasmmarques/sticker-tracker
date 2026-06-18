@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ImportCollectionResult } from "../hooks/useStickerCollection";
 
 export type GroupOption = {
   letter: string;
@@ -14,8 +15,8 @@ type ShowToast = (toast: {
 type CollectionToolbarProps = {
   onMarkAllStickers?: () => void;
   allStickersCount?: number;
-  onImportMissingList?: (missingCodes: string[]) => void;
-  onImportRepeatedList?: (repeatedCodes: string[]) => void;
+  onImportMissingList?: (importText: string) => ImportCollectionResult;
+  onImportRepeatedList?: (importText: string) => ImportCollectionResult;
   showImportDialog?: boolean;
   onCloseImportDialog?: () => void;
   showMarkAllDialog?: boolean;
@@ -52,17 +53,27 @@ export function CollectionToolbar({
   };
 
   const handleImportSubmit = () => {
-    const codes = importText.split(",").map((s) => s.trim()).filter(Boolean);
-    if (importMode === "missing") {
-      onImportMissingList?.(codes);
-    } else {
-      onImportRepeatedList?.(codes);
+    const result =
+      importMode === "missing"
+        ? onImportMissingList?.(importText)
+        : onImportRepeatedList?.(importText);
+
+    if (!result?.applied) {
+      showToast?.({
+        title: "Nenhuma figurinha importada.",
+        description:
+          "Confira se os códigos seguem um formato como GER 5 ou MEX: 4, 6, 17.",
+        variant: "error",
+      });
+
+      return;
     }
+
     onCloseImportDialog?.();
     setImportText("");
     showToast?.({
       title: "Figurinhas importadas.",
-      description: `${codes.length} código(s) adicionado(s).`,
+      description: getImportSuccessDescription(importMode, result, allStickersCount),
       variant: "success",
     });
   };
@@ -137,12 +148,12 @@ export function CollectionToolbar({
             </div>
             <p className="text-sm text-[var(--color-ink)] mb-3">
               {importMode === "missing"
-                ? `Cole aqui a lista de códigos das figurinhas que faltam, separadas por vírgula. (Se vazio, marca todas como tenho)`
-                : `Cole aqui a lista de códigos das figurinhas repetidas, separadas por vírgula. (Isso aumenta +1 em cada figurinha)`}
+                ? `Cole aqui a lista de códigos das figurinhas que faltam. Se deixar vazio, todas serão marcadas como tenho.`
+                : `Cole aqui a lista de códigos das figurinhas repetidas. Cada código será marcado como tenho + repetida.`}
             </p>
             <textarea
               className="w-full min-h-[100px] p-3 border border-[var(--color-border)] rounded-xl resize-y text-sm font-normal"
-              placeholder={importMode === "missing" ? "Ex: GER 5, BRA 10, ARG 3" : "Ex: GER 5, BRA 10, ARG 3"}
+              placeholder={importMode === "missing" ? "Ex: GER 5, BRA 10, ARG 3" : "Ex: FWC: 1, 2, 3\nMEX: 4, 6, 17"}
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               rows={4}
@@ -168,4 +179,25 @@ export function CollectionToolbar({
       )}
     </section>
   );
+}
+
+function getImportSuccessDescription(
+  importMode: "missing" | "repeated",
+  result: ImportCollectionResult,
+  allStickersCount: number
+): string {
+  if (result.markedAll) {
+    return `Todas as ${allStickersCount} figurinhas foram marcadas como tenho.`;
+  }
+
+  const ignoredMessage =
+    result.ignoredCount > 0
+      ? ` ${result.ignoredCount} código(s) não foram encontrados.`
+      : "";
+
+  if (importMode === "missing") {
+    return `${result.matchedCount} faltante(s) reconhecida(s).${ignoredMessage}`;
+  }
+
+  return `${result.matchedCount} repetida(s) reconhecida(s).${ignoredMessage}`;
 }
